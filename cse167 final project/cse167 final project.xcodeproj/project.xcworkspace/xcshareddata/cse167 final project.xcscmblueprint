@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "18C92A0BD3389AE5C48B5907D097CE48F9350D85",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "D41287FAF4BF047D393D5273E2838D7445D5A0D7" : 9223372036854775807,
+    "18C92A0BD3389AE5C48B5907D097CE48F9350D85" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "3D451EF9-20A7-40DD-8136-4CA1F6205042",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "D41287FAF4BF047D393D5273E2838D7445D5A0D7" : "..\/..\/..\/..\/..\/Developer\/nanogui",
+    "18C92A0BD3389AE5C48B5907D097CE48F9350D85" : "Fantastic-Beasts\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "cse167 final project",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "cse167 final project\/cse167 final project.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/renoyin\/Fantastic-Beasts.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "18C92A0BD3389AE5C48B5907D097CE48F9350D85"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/wjakob\/nanogui.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D41287FAF4BF047D393D5273E2838D7445D5A0D7"
+    }
+  ]
+}
