@@ -158,16 +158,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-    if(!isMove) return;
-    
-	// update position
-    velocity += sqrt(curve->maxY + 0.1 - curve->points[velocity].y) / 3;
-    if(velocity >= curve->points.size()) {
-        velocity -= curve->points.size();
-    }
-    sphereObj->toWorld = glm::translate(glm::mat4(1.0f), curve->points[velocity]);
-    
-    
+
 }
 
 void Window::display_callback(GLFWwindow* window)

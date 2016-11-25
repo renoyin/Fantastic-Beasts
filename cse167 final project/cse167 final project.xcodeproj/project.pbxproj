@@ -24,6 +24,7 @@
 		547B5A221DE788A900478A68 /* Bezier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 547B5A1C1DE788A900478A68 /* Bezier.cpp */; };
 		547B5A231DE788A900478A68 /* FrustumG.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 547B5A211DE788A900478A68 /* FrustumG.cpp */; };
 		547B5A281DE7890C00478A68 /* Vec3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 547B5A271DE7890C00478A68 /* Vec3.cpp */; };
+		547B5A2B1DE7BDA600478A68 /* Plane.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 547B5A291DE7BDA600478A68 /* Plane.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -77,6 +78,8 @@
 		547B5A251DE788D300478A68 /* FrustumG.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FrustumG.h; path = ../../FrustumG.h; sourceTree = "<group>"; };
 		547B5A261DE7890C00478A68 /* Vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Vec3.h; path = ../../Vec3.h; sourceTree = "<group>"; };
 		547B5A271DE7890C00478A68 /* Vec3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Vec3.cpp; path = ../../Vec3.cpp; sourceTree = "<group>"; };
+		547B5A291DE7BDA600478A68 /* Plane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Plane.cpp; path = ../../Plane.cpp; sourceTree = "<group>"; };
+		547B5A2A1DE7BDA600478A68 /* Plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Plane.h; path = ../../Plane.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -147,6 +150,8 @@
 				547B5A211DE788A900478A68 /* FrustumG.cpp */,
 				547B5A261DE7890C00478A68 /* Vec3.h */,
 				547B5A271DE7890C00478A68 /* Vec3.cpp */,
+				547B5A2A1DE7BDA600478A68 /* Plane.h */,
+				547B5A291DE7BDA600478A68 /* Plane.cpp */,
 			);
 			path = "cse167 final project";
 			sourceTree = "<group>";
@@ -227,6 +232,7 @@
 				547B5A061DE7858500478A68 /* Window.cpp in Sources */,
 				547B59FA1DE7838400478A68 /* README.md in Sources */,
 				547B5A281DE7890C00478A68 /* Vec3.cpp in Sources */,
+				547B5A2B1DE7BDA600478A68 /* Plane.cpp in Sources */,
 				547B59FD1DE7838400478A68 /* main.cpp in Sources */,
 				547B5A181DE7881D00478A68 /* MatrixTransform.cpp in Sources */,
 				547B5A151DE7881D00478A68 /* Sphere.cpp in Sources */,

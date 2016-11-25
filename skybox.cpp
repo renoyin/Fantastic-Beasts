@@ -175,7 +175,7 @@ unsigned char* skybox::loadPPM(const char* filename, int& width, int& height)
 
 void skybox::draw(GLuint shaderProgram)
 {
-    glm::mat4 MVP = myWindow::Window::P * glm::mat4(glm::mat3(myWindow::Window::V)) * this->toWorld;
+    glm::mat4 MVP = Window::P * glm::mat4(glm::mat3(Window::V)) * this->toWorld;
     // Draw skybox first
     glDepthMask(GL_FALSE);// Remember to turn depth writing off
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "MVP"), 1, GL_FALSE, glm::value_ptr(MVP));
