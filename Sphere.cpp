@@ -126,12 +126,9 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
         // Now send these values to the shader program
         glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
         glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
-        if(ifCollide) {
-            glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), 1.0f, 0.0f, 0.0f);
-        }
-        else {
-            glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), 0.0f, 0.0f, 0.0f);
-        }
+        
+        glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
+        
 
         // draw sphere
         glBindVertexArray(VAO);

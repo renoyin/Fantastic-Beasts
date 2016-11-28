@@ -81,8 +81,8 @@ GLuint depthMap;
 GLuint planeVAO, planeVBO;
 
 //sphereObj move
-//vec3 direction(-1,-2, 4);
-vec3 direction = Window::randomPos();
+vec3 direction(-1,-2, 4);
+//vec3 direction = Window::randomPos();
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
 float sphereRadius = 4;
@@ -119,9 +119,11 @@ void Window::initialize_objects()
     //cube object
     for(int i=0; i<8; i++) {
         Cube* cubeObj = new Cube();
+        cubeObj->color = vec3(0.0f,1.0f, 0.0f);
         Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
         outBound->solid = false;
-        outBound->ifDraw = false;
+        outBound->ifDraw = true;
+        outBound->color = vec3(1.0f,0.0f, 0.0f);
         cubeList.push_back(cubeObj);
         outBoundList.push_back(outBound);
         cubePosList.push_back(randomPos());
@@ -334,14 +336,14 @@ void Window::display_callback(GLFWwindow* window)
     //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
     sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    
-    glUseProgram(lightShaderProgram);
-    //cube color
-    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.ambient"), 0.1745f, 0.01175f, 0.01175f);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
-    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
+//    
+//    glUseProgram(lightShaderProgram);
+//    //cube color
+//    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
+//    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.ambient"), 0.1745f, 0.01175f, 0.01175f);
+//    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
+//    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
+//    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
 
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
@@ -352,13 +354,13 @@ void Window::display_callback(GLFWwindow* window)
 //        cubePosList[*itr] = randomPos();
 //        
 //    }
-
+    glUseProgram(sphereShaderProgram);
     for(int i=0; i<cubePosList.size(); i++) {
         cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
-        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        cubeList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
         
         //if(collisionList.find(i)== collisionList.end()) {
-            outBoundList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+            outBoundList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
         //}
         
     }
@@ -500,10 +502,7 @@ unordered_set<int> Window::checkCollision() {
         if (dis < r) {
 //            vec3 displacement = spherePos - cubePosList[i];
 //            vec3 speed = direction;
-            outBoundList[i]->ifDraw = true;
             if(eliminate) {
-                
-                outBoundList[i]->ifDraw = false;
                 vec3 norm = spherePos - cubePosList[i];
                 vec3 I = normalize(direction);
                 vec3 R = reflect(I, normalize(norm));
@@ -512,9 +511,7 @@ unordered_set<int> Window::checkCollision() {
                 cubePosList[i] = randomPos();
             }
         }
-        else {
-            outBoundList[i]->ifDraw = false;
-        }
+      
     }
     return res;
     
