@@ -55,6 +55,7 @@ uniform PointLight pointLight;
 uniform Material material;
 uniform vec3 viewPos;
 uniform int mode = 2;
+uniform vec3 colorin;
 
 
 // function prototypes
@@ -83,7 +84,7 @@ void main()
         result = vec3(0.0f);
     }
     else {
-        result = norm;
+        result = colorin;
     }
     color = vec4(result, 1.0);
 }

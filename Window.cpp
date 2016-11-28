@@ -44,6 +44,10 @@ skybox* skybox;
 Bezier* curve;
 Cube* gameBox;
 Cube* lightBox;
+Geode* cubeObj;
+Geode* outBound;
+Group* cubeGroup;
+Group* boundGroup;
 unsigned char pixel[4];
 int ind = 0;
 Sphere* sphereObj;
@@ -73,7 +77,7 @@ GLuint depthMap;
 GLuint planeVAO, planeVBO;
 
 //sphereObj move
-vec3 direction(-1,-2,0);
+vec3 direction(-1,-2, 4);
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
 float radius = 4;
@@ -104,6 +108,16 @@ void Window::initialize_objects()
     
     // light
     lightBox = new Cube();
+    
+    //cube object
+    cubeObj = new Cube();
+    outBound = new Sphere(3.5f,12,24);
+    outBound->solid = false;
+    cubeGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
+    cubeGroup->addChild(cubeObj);
+    boundGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
+    boundGroup->addChild(outBound);
+    //cubeObj->toWorld =  translate(mat4(1.0f), vec3(4,6,10))* cubeObj->toWorld;
     
 //    // Bezier curve
 //    curve = new Bezier();
@@ -300,14 +314,27 @@ void Window::display_callback(GLFWwindow* window)
     glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.628281f, 0.555802f, 0.366065f);
     // Mode -> point light
     glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
-
+    
     //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
     //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
     //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
     sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     
+    glUseProgram(lightShaderProgram);
+    //cube color
+    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.ambient"), 0.1745f, 0.01175f, 0.01175f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
+    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
+    cubeGroup->draw(lightShaderProgram, glm::mat4(1.0f));
     
+    
+    glUseProgram(lightShaderProgram);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "colorin"), 1.0f, 0.0f, 0.0f);
+    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 0);
+    boundGroup->draw(lightShaderProgram, glm::mat4(1.0f));
     
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
@@ -367,8 +394,13 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
     
-    if(action == GLFW_PRESS)
+    if(action == GLFW_PRESS) {
         keys[key] = true;
+        if(key == GLFW_KEY_B) {
+            outBound->ifDraw = !outBound->ifDraw;
+        }
+    }
+    
     else if(action == GLFW_RELEASE)
         keys[key] = false;
 }
@@ -423,11 +455,12 @@ void Window::do_movement() {
         cam_pos -= glm::normalize(glm::cross(cam_front, cam_up)) * cameraSpeed;
     else if(keys[GLFW_KEY_D])
         cam_pos += glm::normalize(glm::cross(cam_front, cam_up)) * cameraSpeed;
+    
 }
 
 void Window::moveSphereObj() {
     int hitWall = walls->ballHitWall(spherePos, radius);
-    cout<< hitWall<<endl;
+    //cout<< hitWall<<endl;
     if(hitWall != -1) {
         direction = walls->reflection(direction, hitWall);
     }

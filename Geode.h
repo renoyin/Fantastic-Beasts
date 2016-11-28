@@ -6,6 +6,7 @@
 class Geode : public Node {
 public:
     bool ifDraw = true;
+    bool ifCollide = false;
     glm::vec3 color = glm::vec3(0, 0, 0);
     glm::mat4 toWorld = glm::mat4(1.0f);
     bool solid = true;
