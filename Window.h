@@ -2,6 +2,8 @@
 #define _WINDOW_H_
 
 #include <iostream>
+#include <ctime>
+#include <cstdlib>
 
 #define GLFW_INCLUDE_GLEXT
 #ifdef __APPLE__
@@ -60,6 +62,7 @@ public:
     
     static void moveSphereObj();
     static unordered_set<int> checkCollision();
+    static vec3 randomPos();
 };
 
 #endif

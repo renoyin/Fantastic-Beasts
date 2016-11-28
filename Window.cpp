@@ -347,14 +347,23 @@ void Window::display_callback(GLFWwindow* window)
     glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
     glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
 
+    //check collision and delete collide cube, then generate a new one in random position
+    unordered_set<int> collisionList = checkCollision();
+    //cout<< "current collide" << cubePosList.size() << endl;
+//    
+//    for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
+//        cout<< *itr << endl;
+//        cubePosList[*itr] = randomPos();
+//        
+//    }
+
     for(int i=0; i<cubePosList.size(); i++) {
-        unordered_set<int> collisionList = checkCollision();
-        
+        cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
         cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
         
-        if(collisionList.find(i)== collisionList.end()) {
+        //if(collisionList.find(i)== collisionList.end()) {
             outBoundList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
-        }
+        //}
         
     }
     // Shadow mapping
@@ -486,11 +495,28 @@ unordered_set<int> Window::checkCollision() {
         float dis = length(spherePos - cubePosList[i]);
         if (dis < r) {
             res.insert(i);
+            cubePosList[i] = randomPos();
         }
     }
     return res;
     
 }
+vec3 Window::randomPos() {
+    vec3 res(0);
+    vector<double> ran;
+    for(int k=0; k<3 ;k++) {
+        double i = 0, d = 0;
+        i = rand() % 40 - 20; //Gives a number between -20 and +20;
+        d = i*16/20;
+        ran.push_back(d);
+    }
+    res.x = ran[0];
+    res.y = ran[1];
+    res.z = ran[2];
+    
+    return res;
+}
+
 void Window::moveSphereObj() {
     int hitWall = walls->ballHitWall(spherePos, sphereRadius);
     //cout<< hitWall<<endl;
