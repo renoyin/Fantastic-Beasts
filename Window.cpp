@@ -335,7 +335,7 @@ void Window::display_callback(GLFWwindow* window)
     //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
     //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
     //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
-    //sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
+    sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 //    
 //    glUseProgram(lightShaderProgram);
@@ -345,26 +345,21 @@ void Window::display_callback(GLFWwindow* window)
 //    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
 //    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
 //    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
-
+    
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
-    //cout<< "current collide" << cubePosList.size() << endl;
-//    
-//    for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
-//        cout<< *itr << endl;
-//        cubePosList[*itr] = randomPos();
-//        
-//    }
-    glUseProgram(shaderProgram);
     for(int i=0; i<cubePosList.size(); i++) {
         cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
-        cubeList[i]->draw(shaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        glUseProgram(lightShaderProgram);
+        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
         
         //if(collisionList.find(i)== collisionList.end()) {
-            outBoundList[i]->draw(shaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        glUseProgram(shaderProgram);
+        outBoundList[i]->draw(shaderProgram, translate(mat4(1.0f),cubePosList[i]));
         //}
         
     }
+    
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;

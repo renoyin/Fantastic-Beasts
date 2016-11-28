@@ -31,7 +31,7 @@ public:
  
     // These variables are needed for the shader program
     GLuint VBO, VBO2, VAO, EBO;
-    GLuint uProjection, uModelview;
+    GLuint uProjection, uModelview, uModel;
     std::vector<GLfloat> vertices;
     std::vector<GLfloat> normals;
     std::vector<GLfloat> texcoords;
