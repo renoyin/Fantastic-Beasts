@@ -30,7 +30,7 @@ public:
 
 	// These variables are needed for the shader program
 	GLuint VBO, VAO, EBO, FEBO;
-	GLuint uProjection, uModelview, uModel;
+	GLuint uProjection, uModelview;
 };
 
 // Define the coordinates and indices needed to draw the cube. Note that it is not necessary

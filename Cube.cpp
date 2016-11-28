@@ -67,7 +67,6 @@ void Cube::draw(GLuint shaderProgram, glm::mat4 C)
     glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
     glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
     
-    
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);

@@ -118,25 +118,17 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
     if(ifDraw) {
         //toWorld = C*toWorld;
         glm::mat4 mvp = Window::P * Window::V * C * toWorld;
-        glm::mat4 modelview = Window::V *C * toWorld;
-        
         // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
         // Consequently, we need to forward the projection, view, and model matrices to the shader programs
         // Get the location of the uniform variables "projection" and "modelview"
-        //GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
-        //GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
-        uProjection = glGetUniformLocation(shaderProgram, "projection");
-        uModelview = glGetUniformLocation(shaderProgram, "modelview");
-        uModel = glGetUniformLocation(shaderProgram, "model");
-        glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
-        glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
-        glUniformMatrix4fv(uModel, 1, GL_FALSE, &toWorld[0][0]);
+        GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
+        GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
         // Now send these values to the shader program
-        //glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
-        //glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
+        glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
+        glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
         
-        glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
-        
+        glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), 1.0f, 0.0f, 0.0f);
+       
 
         // draw sphere
         glBindVertexArray(VAO);
