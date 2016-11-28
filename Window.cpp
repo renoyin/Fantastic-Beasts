@@ -502,7 +502,12 @@ unordered_set<int> Window::checkCollision() {
 //            vec3 speed = direction;
             outBoundList[i]->ifDraw = true;
             if(eliminate) {
+                
                 outBoundList[i]->ifDraw = false;
+                vec3 norm = spherePos - cubePosList[i];
+                vec3 I = normalize(direction);
+                vec3 R = reflect(I, normalize(norm));
+                direction = R;
                 res.insert(i);
                 cubePosList[i] = randomPos();
             }
