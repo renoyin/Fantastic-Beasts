@@ -140,6 +140,7 @@ void Window::initialize_objects()
     
     
 	// Load the shader program. Make sure you have the correct filepath up top
+    shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     skyboxShaderProgram = LoadShaders("./skybox.vert", "./skybox.frag");
     sphereShaderProgram = LoadShaders("./sphere.vert", "./sphere.frag");
     lightShaderProgram = LoadShaders("./light.vert", "./light.frag");
@@ -334,7 +335,7 @@ void Window::display_callback(GLFWwindow* window)
     //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
     //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
     //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
-    sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
+    //sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 //    
 //    glUseProgram(lightShaderProgram);
@@ -354,13 +355,13 @@ void Window::display_callback(GLFWwindow* window)
 //        cubePosList[*itr] = randomPos();
 //        
 //    }
-    glUseProgram(sphereShaderProgram);
+    glUseProgram(shaderProgram);
     for(int i=0; i<cubePosList.size(); i++) {
         cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
-        cubeList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        cubeList[i]->draw(shaderProgram, translate(mat4(1.0f),cubePosList[i]));
         
         //if(collisionList.find(i)== collisionList.end()) {
-            outBoundList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+            outBoundList[i]->draw(shaderProgram, translate(mat4(1.0f),cubePosList[i]));
         //}
         
     }
