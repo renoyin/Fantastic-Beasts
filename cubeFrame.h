@@ -1,6 +1,5 @@
 #ifndef _CUBEFRAME_H_
 #define _CUBEFRAME_H_
-
 #ifdef __APPLE__
 // If modern OpenGL replace gl.h with gl3.h
 #include <OpenGL/gl.h>
@@ -12,8 +11,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
-
 class CubeFrame
 {
 public:

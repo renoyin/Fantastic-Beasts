@@ -21,7 +21,6 @@
 #include "MatrixTransform.h"
 #include "FrustumG.h"
 #include "Bezier.h"
-#include "cubeFrame.h"
 //#include <nanogui/nanogui.h>
 
 
@@ -56,6 +55,8 @@ public:
     static void scroll_callback(GLFWwindow*, double, double);
     static void do_movement();
     static void generateRobot(glm::mat4);
+    
+    static void moveSphereObj();
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "window.h"
 #include "glm/gtx/vector_angle.hpp"
 #include <time.h>
-
+using namespace std;
 
 const char* window_title = "GLFW Starter Project";
 GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram;
@@ -39,7 +39,7 @@ double Window::lastZ = 0.0f;
 
 std::string target = "object";
 std::string control = "object";
-
+FrustumG* walls;
 skybox* skybox;
 Bezier* curve;
 Cube* gameBox;
@@ -72,6 +72,12 @@ GLuint depthMapFBO;
 GLuint depthMap;
 GLuint planeVAO, planeVBO;
 
+//sphereObj move
+vec3 direction(-1,-2,0);
+mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
+vec3 spherePos(0,0,0);
+float radius = 4;
+
 
 
 void Window::initialize_objects()
@@ -87,9 +93,11 @@ void Window::initialize_objects()
 //    faces.push_back("./skybox_texture/back.ppm");
 //    faces.push_back("./skybox_texture/front.ppm");
 //    skybox = new skybox::skybox(faces);
-    
+    // FrustumG object six planes of gameBox
+    walls = new FrustumG();
+    walls->setCubePlanes(40);
     // Sphere ojbect
-    sphereObj = new Sphere(4, 12, 24);
+    sphereObj = new Sphere(radius, 12, 24);
     
     // Game box
     gameBox = new Cube();
@@ -161,6 +169,12 @@ void Window::initialize_objects()
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
+    delete(sphereObj);
+    delete(skybox);
+    delete(curve);
+    delete(walls);
+    delete(gameBox);
+    delete(lightBox);
     glDeleteProgram(skyboxShaderProgram);
 	glDeleteProgram(sphereShaderProgram);
     glDeleteProgram(gameboxShaderProgram);
@@ -245,6 +259,7 @@ void Window::idle_callback()
 void Window::display_callback(GLFWwindow* window)
 {
     do_movement();
+    moveSphereObj();
     GLfloat currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
@@ -410,6 +425,17 @@ void Window::do_movement() {
         cam_pos += glm::normalize(glm::cross(cam_front, cam_up)) * cameraSpeed;
 }
 
+void Window::moveSphereObj() {
+    int hitWall = walls->ballHitWall(spherePos, radius);
+    cout<< hitWall<<endl;
+    if(hitWall != -1) {
+        direction = walls->reflection(direction, hitWall);
+    }
+    translateM = glm::translate(mat4(1.0f), normalize(direction));
+    sphereObj->toWorld = translateM * sphereObj->toWorld;
+    vec4 result = translateM * vec4(spherePos,1.0);
+    spherePos = vec3(result.x, result.y, result.z);
+}
 glm::vec3 Window::trackBallMapping(double x, double y) {
     glm::vec3 v;
     float d;

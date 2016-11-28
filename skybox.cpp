@@ -101,7 +101,7 @@ GLuint skybox::loadTexture(std::vector<const GLchar*> images) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     
     // Select GL_MODULATE to mix texture with polygon color for shading:
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     
     // Use bilinear interpolation:
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

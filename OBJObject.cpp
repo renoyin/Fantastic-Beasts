@@ -1,5 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "OBJObject.h"
-
+#include "Window.h"
+#include <string>
+#include <iostream>
+using namespace std;
 OBJObject::OBJObject(const char *filepath)
 {
 	//toWorld = glm::mat4(1.0f);
