@@ -1,6 +1,7 @@
 #include "window.h"
 #include "glm/gtx/vector_angle.hpp"
 #include <time.h>
+
 using namespace std;
 
 const char* window_title = "GLFW Starter Project";
@@ -44,8 +45,11 @@ skybox* skybox;
 Bezier* curve;
 Cube* gameBox;
 Cube* lightBox;
-Geode* cubeObj;
-Geode* outBound;
+Cube* cubeObj;
+Sphere* outBound;
+vector<Geode*> cubeList;
+vector<Geode*> outBoundList;
+vector<vec3> cubePosList;
 Group* cubeGroup;
 Group* boundGroup;
 unsigned char pixel[4];
@@ -80,7 +84,8 @@ GLuint planeVAO, planeVBO;
 vec3 direction(-1,-2, 4);
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
-float radius = 4;
+float sphereRadius = 4;
+float outBoundRadius = 3.5;
 
 
 
@@ -101,7 +106,7 @@ void Window::initialize_objects()
     walls = new FrustumG();
     walls->setCubePlanes(40);
     // Sphere ojbect
-    sphereObj = new Sphere(radius, 12, 24);
+    sphereObj = new Sphere(sphereRadius, 12, 24);
     
     // Game box
     gameBox = new Cube();
@@ -111,12 +116,25 @@ void Window::initialize_objects()
     
     //cube object
     cubeObj = new Cube();
-    outBound = new Sphere(3.5f,12,24);
+    outBound = new Sphere(outBoundRadius, 12, 24);
     outBound->solid = false;
-    cubeGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
-    cubeGroup->addChild(cubeObj);
-    boundGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
-    boundGroup->addChild(outBound);
+    cubeList.push_back(cubeObj);
+    cubeList.push_back(cubeObj);
+    cubeList.push_back(cubeObj);
+    cubeList.push_back(cubeObj);
+    outBoundList.push_back(outBound);
+    outBoundList.push_back(outBound);
+    outBoundList.push_back(outBound);
+    outBoundList.push_back(outBound);
+    cubePosList.push_back(vec3(10,2,5));
+    cubePosList.push_back(vec3(1,10,12));
+    cubePosList.push_back(vec3(4,15,-11));
+    cubePosList.push_back(vec3(15,2,-3));
+    
+//    cubeGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
+//    cubeGroup->addChild(cubeObj);
+//    boundGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
+//    boundGroup->addChild(outBound);
     //cubeObj->toWorld =  translate(mat4(1.0f), vec3(4,6,10))* cubeObj->toWorld;
     
 //    // Bezier curve
@@ -328,14 +346,17 @@ void Window::display_callback(GLFWwindow* window)
     glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
     glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
     glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
-    cubeGroup->draw(lightShaderProgram, glm::mat4(1.0f));
-    
-    
-    glUseProgram(lightShaderProgram);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "colorin"), 1.0f, 0.0f, 0.0f);
-    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 0);
-    boundGroup->draw(lightShaderProgram, glm::mat4(1.0f));
-    
+
+    for(int i=0; i<cubePosList.size(); i++) {
+        unordered_set<int> collisionList = checkCollision();
+        
+        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        
+        if(collisionList.find(i)== collisionList.end()) {
+            outBoundList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        }
+        
+    }
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
@@ -458,8 +479,20 @@ void Window::do_movement() {
     
 }
 
+unordered_set<int> Window::checkCollision() {
+    unordered_set<int> res;
+    for(int i=0; i<cubePosList.size(); i++) {
+        float r = sphereRadius + outBoundRadius;
+        float dis = length(spherePos - cubePosList[i]);
+        if (dis < r) {
+            res.insert(i);
+        }
+    }
+    return res;
+    
+}
 void Window::moveSphereObj() {
-    int hitWall = walls->ballHitWall(spherePos, radius);
+    int hitWall = walls->ballHitWall(spherePos, sphereRadius);
     //cout<< hitWall<<endl;
     if(hitWall != -1) {
         direction = walls->reflection(direction, hitWall);

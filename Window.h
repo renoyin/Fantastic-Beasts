@@ -21,6 +21,8 @@
 #include "MatrixTransform.h"
 #include "FrustumG.h"
 #include "Bezier.h"
+#include <unordered_set>
+using namespace std;
 //#include <nanogui/nanogui.h>
 
 
@@ -57,6 +59,7 @@ public:
     static void generateRobot(glm::mat4);
     
     static void moveSphereObj();
+    static unordered_set<int> checkCollision();
 };
 
 #endif
