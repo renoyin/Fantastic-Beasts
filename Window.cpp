@@ -45,8 +45,8 @@ skybox* skybox;
 Bezier* curve;
 Cube* gameBox;
 Cube* lightBox;
-Cube* cubeObj;
-Sphere* outBound;
+//Cube* cubeObj;
+//Sphere* outBound;
 vector<Geode*> cubeList;
 vector<Geode*> outBoundList;
 vector<vec3> cubePosList;
@@ -81,12 +81,14 @@ GLuint depthMap;
 GLuint planeVAO, planeVBO;
 
 //sphereObj move
-vec3 direction(-1,-2, 4);
+//vec3 direction(-1,-2, 4);
+vec3 direction = Window::randomPos();
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
 float sphereRadius = 4;
 float outBoundRadius = 3.5;
-
+float speed = 1.0f;
+bool eliminate = false;
 
 
 void Window::initialize_objects()
@@ -115,21 +117,15 @@ void Window::initialize_objects()
     lightBox = new Cube();
     
     //cube object
-    cubeObj = new Cube();
-    outBound = new Sphere(outBoundRadius, 12, 24);
-    outBound->solid = false;
-    cubeList.push_back(cubeObj);
-    cubeList.push_back(cubeObj);
-    cubeList.push_back(cubeObj);
-    cubeList.push_back(cubeObj);
-    outBoundList.push_back(outBound);
-    outBoundList.push_back(outBound);
-    outBoundList.push_back(outBound);
-    outBoundList.push_back(outBound);
-    cubePosList.push_back(vec3(10,2,5));
-    cubePosList.push_back(vec3(1,10,12));
-    cubePosList.push_back(vec3(4,15,-11));
-    cubePosList.push_back(vec3(15,2,-3));
+    for(int i=0; i<8; i++) {
+        Cube* cubeObj = new Cube();
+        Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
+        outBound->solid = false;
+        outBound->ifDraw = false;
+        cubeList.push_back(cubeObj);
+        outBoundList.push_back(outBound);
+        cubePosList.push_back(randomPos());
+    }
     
 //    cubeGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
 //    cubeGroup->addChild(cubeObj);
@@ -427,7 +423,15 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
     if(action == GLFW_PRESS) {
         keys[key] = true;
         if(key == GLFW_KEY_B) {
-            outBound->ifDraw = !outBound->ifDraw;
+            for(int i=0; i<outBoundList.size(); i++) {
+                outBoundList[i]->ifDraw = !outBoundList[i]->ifDraw;
+            }
+        }
+        if(key == GLFW_KEY_C) {
+            direction = Window::randomPos();
+        }
+        if(key == GLFW_KEY_E) {
+            eliminate = !eliminate;
         }
     }
     
@@ -494,8 +498,17 @@ unordered_set<int> Window::checkCollision() {
         float r = sphereRadius + outBoundRadius;
         float dis = length(spherePos - cubePosList[i]);
         if (dis < r) {
-            res.insert(i);
-            cubePosList[i] = randomPos();
+//            vec3 displacement = spherePos - cubePosList[i];
+//            vec3 speed = direction;
+            outBoundList[i]->ifDraw = true;
+            if(eliminate) {
+                outBoundList[i]->ifDraw = false;
+                res.insert(i);
+                cubePosList[i] = randomPos();
+            }
+        }
+        else {
+            outBoundList[i]->ifDraw = false;
         }
     }
     return res;
@@ -523,7 +536,7 @@ void Window::moveSphereObj() {
     if(hitWall != -1) {
         direction = walls->reflection(direction, hitWall);
     }
-    translateM = glm::translate(mat4(1.0f), normalize(direction));
+    translateM = glm::translate(mat4(1.0f), normalize(direction)*speed);
     sphereObj->toWorld = translateM * sphereObj->toWorld;
     vec4 result = translateM * vec4(spherePos,1.0);
     spherePos = vec3(result.x, result.y, result.z);
