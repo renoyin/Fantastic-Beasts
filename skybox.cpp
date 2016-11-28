@@ -60,7 +60,7 @@ GLfloat skyboxVertices[] = {
 
 skybox::skybox(std::vector<const GLchar*> images) {
     this->toWorld = glm::mat4(1.0f);
-    this->toWorld = this->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(100.0f));
+    this->toWorld = this->toWorld * glm::scale(glm::mat4(1.0f), glm::vec3(32.0f));
     
     glGenVertexArrays(1, &skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
@@ -113,6 +113,8 @@ GLuint skybox::loadTexture(std::vector<const GLchar*> images) {
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    
+    glDisable(GL_CULL_FACE);
     
     return textureID;
 }

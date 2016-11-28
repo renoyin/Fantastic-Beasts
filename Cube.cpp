@@ -9,6 +9,7 @@ Cube::Cube()
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
+    glGenBuffers(1, &FEBO);
 	
 	// Bind the Vertex Array Object (VAO) first, then bind the associated buffers to it.
 	// Consider the VAO as a container for all your buffers.
@@ -33,6 +34,9 @@ Cube::Cube()
 	// In what order should it draw those vertices? That's why we'll need a GL_ELEMENT_ARRAY_BUFFER for this.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, FEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(frameIndices), frameIndices, GL_STATIC_DRAW);
 
 	// Unbind the currently bound buffer so that we don't accidentally make unwanted changes to it.
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -52,35 +56,48 @@ Cube::~Cube()
 
 void Cube::draw(GLuint shaderProgram, glm::mat4 C)
 {
-    if(!ifDraw) return;
+    //toWorld = C*toWorld;
+    glm::mat4 mvp = Window::P * Window::V * C * toWorld;
+    // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
+    // Consequently, we need to forward the projection, view, and model matrices to the shader programs
+    // Get the location of the uniform variables "projection" and "modelview"
+    GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
+    GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+    // Now send these values to the shader program
+    glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
     
-	// Calculate the combination of the model and view (camera inverse) matrices
-	glm::mat4 modelview = Window::V * C * toWorld;
-	// We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
-	// Consequently, we need to forward the projection, view, and model matrices to the shader programs
-	// Get the location of the uniform variables "projection" and "modelview"
-	uProjection = glGetUniformLocation(shaderProgram, "projection");
-	uModelview = glGetUniformLocation(shaderProgram, "modelview");
-	// Now send these values to the shader program
-	glUniformMatrix4fv(uProjection, 1, GL_FALSE, &Window::P[0][0]);
-	glUniformMatrix4fv(uModelview, 1, GL_FALSE, &modelview[0][0]);
-    glUniform3f(glGetUniformLocation(shaderProgram, "colorInput"), color.x, color.y, color.z);
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
 	glBindVertexArray(0);
 }
 
-void Cube::update(glm::mat4 C)
-{
-    Geode::update(C);
-}
+void Cube::drawFrame(GLuint shaderProgram, glm::mat4 C) {
+    //toWorld = C*toWorld;
+    glm::mat4 mvp = Window::P * Window::V * C * toWorld;
+    // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
+    // Consequently, we need to forward the projection, view, and model matrices to the shader programs
+    // Get the location of the uniform variables "projection" and "modelview"
+    GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
+    GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+    // Now send these values to the shader program
+    glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
+    
+    // Now draw the cube. We simply need to bind the VAO associated with it.
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, FEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(frameIndices), frameIndices, GL_STATIC_DRAW);
+    // Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
+    glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, (GLvoid*)(4*sizeof(GLushort)));
+    glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, (GLvoid*)(8*sizeof(GLushort)));
+    // Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
+    glBindVertexArray(0);
 
-void Cube::spin(float deg)
-{
-	// If you haven't figured it out from the last project, this is how you fix spin's behavior
-	toWorld = toWorld * glm::rotate(glm::mat4(1.0f), 1.0f / 180.0f * glm::pi<float>(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
-

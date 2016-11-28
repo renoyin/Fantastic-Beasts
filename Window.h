@@ -21,6 +21,7 @@
 #include "MatrixTransform.h"
 #include "FrustumG.h"
 #include "Bezier.h"
+#include "cubeFrame.h"
 //#include <nanogui/nanogui.h>
 
 
@@ -53,6 +54,7 @@ public:
     static void cursor_callback(GLFWwindow*, double, double);
     static glm::vec3 trackBallMapping(double, double);
     static void scroll_callback(GLFWwindow*, double, double);
+    static void do_movement();
     static void generateRobot(glm::mat4);
 };
 

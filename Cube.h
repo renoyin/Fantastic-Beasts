@@ -24,11 +24,12 @@ public:
 	~Cube();
 
     void draw(GLuint, glm::mat4);
-    void update(glm::mat4);
-	void spin(float);
+    void drawFrame(GLuint, glm::mat4);
+    //void update(glm::mat4);
+	//void spin(float);
 
 	// These variables are needed for the shader program
-	GLuint VBO, VAO, EBO;
+	GLuint VBO, VAO, EBO, FEBO;
 	GLuint uProjection, uModelview;
 };
 
@@ -57,6 +58,12 @@ const GLuint indices[6][6] = {
 	{4, 5, 1, 1, 0, 4},
 	// Right face
 	{3, 2, 6, 6, 7, 3}
+};
+
+const GLushort frameIndices[] = {
+    0, 1, 2, 3,
+    4, 5, 6, 7,
+    0, 4, 1, 5, 2, 6, 3, 7
 };
 
 #endif

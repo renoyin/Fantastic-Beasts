@@ -4,7 +4,7 @@
 
 
 const char* window_title = "GLFW Starter Project";
-GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram;
+GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram;
 
 
 // On some systems you need to change this to the absolute path
@@ -12,11 +12,12 @@ GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgr
 #define FRAGMENT_SHADER_PATH "./shader.frag"
 
 // Default camera parameters
-glm::vec3 cam_pos(0.0f, 20.0f, 100.0f);		// e  | Position of camera
+glm::vec3 cam_pos(0.0f, 0.0f, 70.0f);		// e  | Position of camera
 glm::vec3 cam_look_at(0.0f, 0.0f, 0.0f);	// d  | This is where the camera looks at
-glm::vec3 cam_up(0.0f, 1.0f, 0.0f);			// up | What orientation "up" is
+glm::vec3 cam_up(0.0f, 1.0f, 0.0f);         // up | What orientation "up" is
+glm::vec3 cam_front(0.0f, 0.0f, -1.0f);
 
-glm::vec3 cam_pos_backup(0.0f, 20.0f, 100.0f);
+glm::vec3 cam_pos_backup(0.0f, 0.0f, 70.0f);
 glm::vec3 cam_look_at_backup(0.0f, 0.0f, 0.0f);
 glm::vec3 cam_up_backup(0.0f, 1.0f, 0.0f);
 
@@ -41,6 +42,8 @@ std::string control = "object";
 
 skybox* skybox;
 Bezier* curve;
+Cube* gameBox;
+Cube* lightBox;
 unsigned char pixel[4];
 int ind = 0;
 Sphere* sphereObj;
@@ -49,6 +52,25 @@ bool isMove = true;
 
 //double mouseX, mouseY;
 
+GLfloat deltaTime = 0.0f;
+GLfloat lastFrame = 0.0f;
+
+// For mouse movement
+bool firstMove = true;
+GLfloat cam_yaw = 0.0f, cam_pitch = 0.0f;
+GLfloat lastX = Window::width / 2, lastY = Window::height / 2;
+GLfloat aspect = 45.0f;
+bool keys[1024];
+
+// light
+glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
+glm::vec3 pointLightPosition = glm::vec3(0.0f,  5.0f,  0.0f);
+
+// Shadow mapping
+const GLuint SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+GLuint depthMapFBO;
+GLuint depthMap;
+GLuint planeVAO, planeVBO;
 
 
 
@@ -65,32 +87,91 @@ void Window::initialize_objects()
 //    faces.push_back("./skybox_texture/back.ppm");
 //    faces.push_back("./skybox_texture/front.ppm");
 //    skybox = new skybox::skybox(faces);
-//    
+    
+    // Sphere ojbect
+    sphereObj = new Sphere(4, 12, 24);
+    
+    // Game box
+    gameBox = new Cube();
+    
+    // light
+    lightBox = new Cube();
+    
 //    // Bezier curve
 //    curve = new Bezier();
-//    
-//    // Sphere ojbect
-//    sphereObj = new Sphere(4, 12, 24);
-//    glm::vec3 pos = curve->points[curve->t + 1];
-//    sphereObj->toWorld = glm::translate(glm::mat4(1.0f), pos);
+    
     
 	// Load the shader program. Make sure you have the correct filepath up top
-//	shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-//    skyboxShaderProgram = LoadShaders("./skybox.vert", "./skybox.frag");
+    skyboxShaderProgram = LoadShaders("./skybox.vert", "./skybox.frag");
+    sphereShaderProgram = LoadShaders("./sphere.vert", "./sphere.frag");
+    lightShaderProgram = LoadShaders("./light.vert", "./light.frag");
+    gameboxShaderProgram = LoadShaders("./gamebox.vert", "./gamebox.frag");
+    depthShaderProgram = LoadShaders("./depthShader.vert", "./depthShader.frag");
+	//shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
 //    sphereShaderProgram = LoadShaders("./sphere.vert", "./sphere.frag");
 //    bezierShaderProgram = LoadShaders("./bezier.vert", "./bezier.frag");
 //    selectShaderProgram = LoadShaders("./selection.vert", "./selection.frag");
-//    envmapShaderProgram = LoadShaders("./envMapping.vert", "./envMapping.frag");
+    //envmapShaderProgram = LoadShaders("./envMapping.vert", "./envMapping.frag");
+    
+    
+    // Plane
+    GLfloat planeVertices[] = {
+        // Positions          // Normals         // Texture Coords
+        25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
+        -25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 25.0f,
+        -25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        
+        25.0f, -0.5f, 25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 0.0f,
+        25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 25.0f, 25.0f,
+        - 25.0f, -0.5f, -25.0f, 0.0f, 1.0f, 0.0f, 0.0f, 25.0f
+    };
+    // Setup plane VAO
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+    glBindVertexArray(0);
+    
+    
+    // Create depth buffer
+    glGenFramebuffers(1, &depthMapFBO);
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Treat this as a destructor function. Delete dynamically allocated memory here.
 void Window::clean_up()
 {
-	glDeleteProgram(shaderProgram);
+    glDeleteProgram(skyboxShaderProgram);
+	glDeleteProgram(sphereShaderProgram);
+    glDeleteProgram(gameboxShaderProgram);
+    glDeleteProgram(lightShaderProgram);
+    glDeleteProgram(depthShaderProgram);
 }
 
 GLFWwindow* Window::create_window(int width, int height)
 {
+    Window::width = width;
+    Window::height = height;
 	// Initialize GLFW
 	if (!glfwInit())
 	{
@@ -152,7 +233,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 	if (height > 0)
 	{
 		P = glm::perspective(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
-		V = glm::lookAt(cam_pos, cam_look_at, cam_up);
+		V = glm::lookAt(cam_pos, cam_front + cam_pos, cam_up);
 	}
 }
 
@@ -163,8 +244,13 @@ void Window::idle_callback()
 
 void Window::display_callback(GLFWwindow* window)
 {
+    do_movement();
+    GLfloat currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
     
 	// Clear the color and depth buffers
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Skybox
@@ -175,179 +261,153 @@ void Window::display_callback(GLFWwindow* window)
     //glUseProgram(bezierShaderProgram);
     //curve->draw(bezierShaderProgram);
     
-    // Use the shader of programID
-	//glUseProgram(shaderProgram);
+    // Sphere
+    glUseProgram(lightShaderProgram);
+    //viewpos
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "viewPos"), cam_pos.x, cam_pos.y, cam_pos.z);
+    //dirLight
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "dirLight.ambient"), 0.1f, 0.1f, 0.1f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "dirLight.diffuse"), 0.5f, 0.5f, 0.5f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "dirLight.specular"), 0.2f, 0.5f, 0.9f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "dirLight.direction"), dirLightDirection.x, dirLightDirection.y, dirLightDirection.z);
+    //pointLight
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "pointLight.ambient"), 0.2f, 0.2f, 0.2f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "pointLight.diffuse"), 1.0f, 1.0f, 1.0f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "pointLight.specular"), 1.0f, 1.0f, 1.0f);
+    glUniform1f(glGetUniformLocation(lightShaderProgram, "pointLight.constant"), 1.0f);
+    glUniform1f(glGetUniformLocation(lightShaderProgram, "pointLight.linear"), 0.09);
+    glUniform1f(glGetUniformLocation(lightShaderProgram, "pointLight.quadratic"), 0.032);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "pointLight.position"), pointLightPosition.x, pointLightPosition.y, pointLightPosition.z);
+    // gold
+    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 128.0f * 0.4f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.ambient"), 0.24725f, 0.1995f, 0.0745f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.75164f, 0.60648f, 0.22648f);
+    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.628281f, 0.555802f, 0.366065f);
+    // Mode -> point light
+    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
+
+    //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
+    //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
+    sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
+    //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    
+    
+    
+    // Shadow mapping
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
+    GLfloat near_plane = 1.0f, far_plane = 7.5f;
+    lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+    lightView = glm::lookAt(pointLightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+    lightSpaceMatrix = lightProjection * lightView;
+    // - render scene from light's point of view
+    glUseProgram(depthShaderProgram);
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    //RenderScene(depthShaderProgram);
+    // Floor
+    glm::mat4 model;
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glBindVertexArray(planeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Reset viewport
+    glViewport(0, 0, Window::width, Window::height);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    
+    
+    // Light box at (0,22,0)
+    glUseProgram(gameboxShaderProgram);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &lightColor.x);
+    gameBox->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 22.0f, 0.0f)));
+    
+    
+    // Game box
+    glUseProgram(gameboxShaderProgram);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glm::vec3 frameColor = glm::vec3(0.196f, 0.714f, 0.576f);
+    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+    gameBox->drawFrame(gameboxShaderProgram, glm::scale(glm::mat4(1.0f), glm::vec3(10.0f)));
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Gets events, including input such as keyboard and mouse or window resizing
 	glfwPollEvents();
 	// Swap buffers
 	glfwSwapBuffers(window);
     
+    //std::cout << glm::to_string(cam_pos) << std::endl;
+    V = glm::lookAt(cam_pos, cam_front + cam_pos, cam_up);
+    
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	// Check for a key press
-	if (action == GLFW_PRESS)
-	{
-		// Check if escape was pressed
-		if (key == GLFW_KEY_ESCAPE)
-		{
-			// Close the window. This causes the program to also terminate.
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
-        
-        // bear
-        if (key == GLFW_KEY_F1)
-        {
-            //obj = bear;
-        }
-        // bunny
-        if (key == GLFW_KEY_F2)
-        {
-            //obj = bunny;
-        }
-        // dragon
-        if (key == GLFW_KEY_F3)
-        {
-            //obj = dragon;
-        }
-        
-        // Move along x axis (x/X)
-        if (key == GLFW_KEY_X && !(mods == GLFW_MOD_SHIFT))
-        {
-            
-        }
-        if (key == GLFW_KEY_X && mods == GLFW_MOD_SHIFT)
-        {
-            
-        }
-        
-        // Move along y axis (y/Y)
-        if (key == GLFW_KEY_Y && !(mods == GLFW_MOD_SHIFT))
-        {
-            
-        }
-        if (key == GLFW_KEY_Y && mods == GLFW_MOD_SHIFT)
-        {
-            
-        }
-        
-        // Move along z axis (z/Z)
-        if (key == GLFW_KEY_Z && !(mods == GLFW_MOD_SHIFT))
-        {
-            
-        }
-        if (key == GLFW_KEY_Z && mods == GLFW_MOD_SHIFT)
-        {
-            
-        }
-        
-        // Scale (s/S)
-        if (key == GLFW_KEY_S && !(mods == GLFW_MOD_SHIFT))
-        {
-            
-        }
-        if (key == GLFW_KEY_S && mods == GLFW_MOD_SHIFT)
-        {
-            
-        }
-        
-        // Orbit about the z axis (o/O)
-        if (key == GLFW_KEY_O && !(mods == GLFW_MOD_SHIFT))
-        {
-            
-        }
-        if (key == GLFW_KEY_O && mods == GLFW_MOD_SHIFT)
-        {
-            
-        }
-        
-        // Reset position, orientation and size
-        if (key == GLFW_KEY_R)
-        {
-            cam_pos = cam_pos_backup;
-            cam_look_at = cam_look_at_backup;
-            cam_up = cam_up_backup;
-            Window::V = glm::lookAt(cam_pos, cam_look_at, cam_up);
-            velocity = curve->t + 1;
-        }
-        
-        // Pause movement
-        if (key == GLFW_KEY_P) {
-            isMove = !isMove;
-        }
-        
-    }
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    
+    if(action == GLFW_PRESS)
+        keys[key] = true;
+    else if(action == GLFW_RELEASE)
+        keys[key] = false;
 }
 
 void Window::mouse_callback(GLFWwindow* window, int button, int action, int mods) {
-    double mouseX, mouseY;
     
-    // Rotate
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-        buttonPressed = true;
-        glfwGetCursorPos(window, &mouseX, &mouseY);
-        //lastPoint = glm::vec3(mouseX, mouseY, 0.0f);
-        lastPoint = trackBallMapping(mouseX, mouseY);
-        mode = "left";
-        //std::cout << "mouse pressed" << std::endl;
-        
-        //GLuint viewport[4];
-        // Clear the color and depth buffers
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // Skybox
-        //glUseProgram(skyboxShaderProgram);
-        //skybox->draw(skyboxShaderProgram);
-        
-        glUseProgram(selectShaderProgram);
-        curve->draw(selectShaderProgram);
-        //std::cout << mouseX << std::endl;
-        //std::cout << height - mouseY << std::endl;
-        glReadPixels(mouseX, height - mouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
-        ind = pixel[0];
-        //std::cout << ind << std::endl;
-    }
-    
-    // Move
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    {
-        buttonPressed = true;
-        glfwGetCursorPos(window, &mouseX, &mouseY);
-        lastPointTB = trackBallMapping(mouseX, mouseY);
-        mode = "right";
-        std::cout << "mouse pressed" << std::endl;
-    }
-    
-    if (action == GLFW_RELEASE)
-    {
-        buttonPressed = false;
-        mode = "default";
-        std::cout << "mouse released" << std::endl;
-        glUseProgram(bezierShaderProgram);
-        curve->draw(bezierShaderProgram);
-        ind = 0;
-    }
 }
 
-void Window::cursor_callback(GLFWwindow* window, double xpos, double ypos)
-{
+void Window::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
     
+    if(firstMove) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMove = false;
+    }
+    
+    GLfloat xoffset = xpos - lastX;
+    GLfloat yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+    
+    GLfloat sensitivity = 0.5;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+    
+    cam_yaw += xoffset;
+    cam_pitch +=yoffset;
+    
+    if(cam_pitch > 89.0f) cam_pitch = 89.0f;
+    if(cam_pitch < -89.0f) cam_pitch = -89.0f;
+    
+    glm::vec3 front;
+    front.x = sin(glm::radians(cam_yaw)) * cos(glm::radians(cam_pitch));
+    front.y = sin(glm::radians(cam_pitch));
+    front.z = -cos(glm::radians(cam_yaw)) * cos(glm::radians(cam_pitch));
+    cam_front = glm::normalize(front);
+    V = glm::lookAt(cam_pos, cam_front + cam_pos, cam_up);
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
 {
-    if (yOffset < 0) {
-        cam_pos_scale *= 0.9;
-    }
-    else {
-        cam_pos_scale *= 1.1;
-    }
-    glm::vec3 cam_pos_tmp = cam_pos * cam_pos_scale;
-    V = glm::lookAt(cam_pos * cam_pos_scale, cam_look_at, cam_up);
-    //frustumg->setCamInternals(45.0f, (float)width / (float)height, 0.1f, 1000.0f);
-    //frustumg->setCamDef(cam_pos_tmp, cam_look_at, cam_up);
+
+}
+
+void Window::do_movement() {
+    GLfloat cameraSpeed = 20.0f * deltaTime;
+    if(keys[GLFW_KEY_W])
+        cam_pos += cameraSpeed * cam_front;
+    else if(keys[GLFW_KEY_S])
+        cam_pos -= cameraSpeed * cam_front;
+    else if(keys[GLFW_KEY_A])
+        cam_pos -= glm::normalize(glm::cross(cam_front, cam_up)) * cameraSpeed;
+    else if(keys[GLFW_KEY_D])
+        cam_pos += glm::normalize(glm::cross(cam_front, cam_up)) * cameraSpeed;
 }
 
 glm::vec3 Window::trackBallMapping(double x, double y) {
