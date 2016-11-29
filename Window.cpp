@@ -117,7 +117,7 @@ void Window::initialize_objects()
     lightBox = new Cube();
     
     //cube object
-    for(int i=0; i<8; i++) {
+    for(int i=0; i<10; i++) {
         Cube* cubeObj = new Cube();
         Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
         outBound->solid = false;
@@ -345,7 +345,7 @@ void Window::display_callback(GLFWwindow* window)
     for(int i=0; i<cubePosList.size(); i++) {
 
         if(collisionList.find(i)== collisionList.end()) {
-            outBoundList[i]->color = vec3(0,0,0);
+            outBoundList[i]->color = vec3(0.0,0.0,0.0);
         }
         else {
             outBoundList[i]->color = vec3(1.0f,0.0f,0.0f);
@@ -530,7 +530,7 @@ void Window::moveSphereObj() {
     //int threshold = 3.0f;
     
     if(hitWall != -1) {
-        cout<< "current hit" <<endl;
+        cout<< "current hit" << hitWall << endl;
         direction = walls->reflection(direction, hitWall);
     }
     
@@ -538,6 +538,15 @@ void Window::moveSphereObj() {
     sphereObj->toWorld = translateM * sphereObj->toWorld;
     vec4 result = translateM * vec4(spherePos,1.0);
     spherePos = vec3(result.x, result.y, result.z);
+    
+    //follow ball view angle
+//    vec4 cam_result = translateM*vec4(cam_pos,1.0);
+//    cam_pos = normalize(spherePos);
+//    vec3 z = normalize(cam_pos);
+//    vec3 x = cross(normalize(cam_up), z);
+//    cam_up = cross(z,x);
+//    cam_look_at = spherePos + direction;
+//    Window::V = glm::lookAt(cam_pos, cam_look_at, cam_up);
     
     
 }
