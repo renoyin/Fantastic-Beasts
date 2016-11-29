@@ -117,7 +117,7 @@ void Window::initialize_objects()
     lightBox = new Cube();
     
     //cube object
-    for(int i=0; i<10; i++) {
+    for(int i=0; i<20; i++) {
         Cube* cubeObj = new Cube();
         Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
         outBound->solid = false;
@@ -496,7 +496,9 @@ unordered_set<int> Window::checkCollision() {
     for(int i=0; i<cubePosList.size(); i++) {
         float r = sphereRadius + outBoundRadius;
         float dis = length(spherePos - cubePosList[i]);
-        if (dis < r) {
+        //float angle = acos(dot(normalize(direction), pl[curWall].normal))/3.14*180;
+        float angle = acos(dot(normalize(direction), normalize(spherePos-cubePosList[i])))/3.14*180;
+        if (dis < r && angle>90) {
             
                 vec3 norm = spherePos - cubePosList[i];
                 vec3 I = normalize(direction);
