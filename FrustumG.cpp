@@ -101,30 +101,33 @@ void FrustumG::setCubePlanes(float len) {
 int FrustumG::ballHitWall(vec3 p, float r) {
     
     float distance;
-    //int i = 0;
-//    int curWall = lastWall;
-//    //cout<< p.x <<","<<p.y<< ","<<p.z<<endl;
-//    while(i<6) {
-//        //curWall = curWall%6;
-//        Plane pa = pl[curWall];
-//        //cout<< "plane"<< pa.normal.x <<","<<pa.normal.y<< ","<<pa.normal.z<<endl;
-//        distance = pl[curWall].distance(p);
-//        //cout<< distance << endl;
-//        if(distance < r) {
-//            lastWall = (curWall+1)%6;
-//            return curWall;
-//        }
-//        curWall++;
-//        i++;
-//    }
-//    lastWall = curWall%6;
-    for(int i=0; i < 6; i++) {
-        distance = pl[i].distance(p);
-        
-        if (distance < r) {
-            return i;
+    //rotation checking
+    int i = 0;
+    int curWall = lastWall;
+    //cout<< p.x <<","<<p.y<< ","<<p.z<<endl;
+    while(i<6) {
+        curWall = curWall%6;
+        Plane pa = pl[curWall];
+        //cout<< "plane"<< pa.normal.x <<","<<pa.normal.y<< ","<<pa.normal.z<<endl;
+        distance = pl[curWall].distance(p);
+        //cout<< distance << endl;
+        if(distance < r) {
+            lastWall = (curWall+1)%6;
+            return curWall;
         }
+        curWall++;
+        i++;
     }
+    lastWall = curWall%6;
+    
+    //no rotation checking
+//    for(int i=0; i < 6; i++) {
+//        distance = pl[i].distance(p);
+//        
+//        if (distance < r) {
+//            return i;
+//        }
+//    }
     return -1;
 }
 

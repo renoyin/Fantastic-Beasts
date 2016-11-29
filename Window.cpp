@@ -122,34 +122,18 @@ void Window::initialize_objects()
         Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
         outBound->solid = false;
         outBound->ifDraw = true;
-        outBound->color = vec3(1.0f,0.0f,0.0f);
         cubeList.push_back(cubeObj);
         outBoundList.push_back(outBound);
         cubePosList.push_back(randomPos());
     }
     
-//    cubeGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
-//    cubeGroup->addChild(cubeObj);
-//    boundGroup = new MatrixTransform(translate(mat4(1.0f), vec3(0,15,0)));
-//    boundGroup->addChild(outBound);
-    //cubeObj->toWorld =  translate(mat4(1.0f), vec3(4,6,10))* cubeObj->toWorld;
-    
-//    // Bezier curve
-//    curve = new Bezier();
-    
-    
 	// Load the shader program. Make sure you have the correct filepath up top
-    shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
     skyboxShaderProgram = LoadShaders("./skybox.vert", "./skybox.frag");
     sphereShaderProgram = LoadShaders("./sphere.vert", "./sphere.frag");
     lightShaderProgram = LoadShaders("./light.vert", "./light.frag");
     gameboxShaderProgram = LoadShaders("./gamebox.vert", "./gamebox.frag");
     depthShaderProgram = LoadShaders("./depthShader.vert", "./depthShader.frag");
-	//shaderProgram = LoadShaders(VERTEX_SHADER_PATH, FRAGMENT_SHADER_PATH);
-//    sphereShaderProgram = LoadShaders("./sphere.vert", "./sphere.frag");
-//    bezierShaderProgram = LoadShaders("./bezier.vert", "./bezier.frag");
-//    selectShaderProgram = LoadShaders("./selection.vert", "./selection.frag");
-    //envmapShaderProgram = LoadShaders("./envMapping.vert", "./envMapping.frag");
+
     
     
     // Plane
@@ -347,25 +331,36 @@ void Window::display_callback(GLFWwindow* window)
 
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
-    //cout<< "current collide" << cubePosList.size() << endl;
-//    
-//    for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
-//        cout<< *itr << endl;
-//        cubePosList[*itr] = randomPos();
-//        
-//    }
+   
 
+    //draw cubes
+    glUseProgram(sphereShaderProgram);
     for(int i=0; i<cubePosList.size(); i++) {
         //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
-        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
-        
-        //if(collisionList.find(i)== collisionList.end()) {
-                //}
-        
+        outBoundList[i]->color = normalize(randomPos());
+        cubeList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
     }
-    glUseProgram(shaderProgram);
+    
+    //draw the wire frame
+    glUseProgram(sphereShaderProgram);
     for(int i=0; i<cubePosList.size(); i++) {
-        outBoundList[i]->draw(shaderProgram, translate(mat4(1.0f),cubePosList[i]));
+
+        if(collisionList.find(i)== collisionList.end()) {
+            outBoundList[i]->color = vec3(0,0,0);
+        }
+        else {
+            outBoundList[i]->color = vec3(1.0f,0,0);
+        }
+        outBoundList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+    }
+    
+    //eliminate mode
+    if(eliminate) {
+        for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
+            cout<< *itr << endl;
+            cubePosList[*itr] = randomPos();
+    
+        }
     }
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
@@ -503,16 +498,13 @@ unordered_set<int> Window::checkCollision() {
         float r = sphereRadius + outBoundRadius;
         float dis = length(spherePos - cubePosList[i]);
         if (dis < r) {
-//            vec3 displacement = spherePos - cubePosList[i];
-//            vec3 speed = direction;
-            if(eliminate) {
+            
                 vec3 norm = spherePos - cubePosList[i];
                 vec3 I = normalize(direction);
                 vec3 R = reflect(I, normalize(norm));
                 direction = R;
                 res.insert(i);
-                cubePosList[i] = randomPos();
-            }
+            
         }
     }
     return res;
