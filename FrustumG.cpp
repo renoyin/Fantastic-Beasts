@@ -98,7 +98,7 @@ void FrustumG::setCubePlanes(float len) {
 /*return index of walls that ball hit
  if no collision, return -1
  */
-int FrustumG::ballHitWall(vec3 p, float r) {
+int FrustumG::ballHitWall(vec3 p, float r, vec3 direction) {
     
     float distance;
     //rotation checking
@@ -110,9 +110,13 @@ int FrustumG::ballHitWall(vec3 p, float r) {
         Plane pa = pl[curWall];
         //cout<< "plane"<< pa.normal.x <<","<<pa.normal.y<< ","<<pa.normal.z<<endl;
         distance = pl[curWall].distance(p);
+        float angle = acos(dot(normalize(direction), pl[curWall].normal))/3.14*180;
+        
         //cout<< distance << endl;
-        if(distance < r) {
+        if(distance < r && angle>90) {
             lastWall = (curWall+1)%6;
+            cout << "dist=" <<distance<<endl;
+            cout << "angle=" << angle << endl;
             return curWall;
         }
         curWall++;

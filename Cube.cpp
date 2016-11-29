@@ -34,7 +34,7 @@ Cube::Cube()
 	// In what order should it draw those vertices? That's why we'll need a GL_ELEMENT_ARRAY_BUFFER for this.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, FEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(frameIndices), frameIndices, GL_STATIC_DRAW);
 
@@ -66,7 +66,8 @@ void Cube::draw(GLuint shaderProgram, glm::mat4 C)
     // Now send these values to the shader program
     glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
     glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
-    
+    glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
+
 	// Now draw the cube. We simply need to bind the VAO associated with it.
 	glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -89,8 +90,7 @@ void Cube::drawFrame(GLuint shaderProgram, glm::mat4 C) {
     glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
     glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
     
-    glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
-    // Now draw the cube. We simply need to bind the VAO associated with it.
+        // Now draw the cube. We simply need to bind the VAO associated with it.
     glBindVertexArray(VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, FEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(frameIndices), frameIndices, GL_STATIC_DRAW);

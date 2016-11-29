@@ -81,7 +81,7 @@ GLuint depthMap;
 GLuint planeVAO, planeVBO;
 
 //sphereObj move
-vec3 direction(-1,-2, 4);
+vec3 Window::direction(-1,-2, 4);
 //vec3 direction = Window::randomPos();
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
@@ -89,7 +89,7 @@ float sphereRadius = 4;
 float outBoundRadius = 3.5;
 float speed = 1.0f;
 bool eliminate = false;
-
+int lastHitWall = -1;
 
 void Window::initialize_objects()
 {
@@ -334,11 +334,10 @@ void Window::display_callback(GLFWwindow* window)
    
 
     //draw cubes
-    glUseProgram(sphereShaderProgram);
     for(int i=0; i<cubePosList.size(); i++) {
         //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
-        outBoundList[i]->color = normalize(randomPos());
-        cubeList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        //outBoundList[i]->color =vec3(1.0f,0.0f,0.0f);
+        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
     }
     
     //draw the wire frame
@@ -349,7 +348,7 @@ void Window::display_callback(GLFWwindow* window)
             outBoundList[i]->color = vec3(0,0,0);
         }
         else {
-            outBoundList[i]->color = vec3(1.0f,0,0);
+            outBoundList[i]->color = vec3(1.0f,0.0f,0.0f);
         }
         outBoundList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
     }
@@ -357,7 +356,7 @@ void Window::display_callback(GLFWwindow* window)
     //eliminate mode
     if(eliminate) {
         for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
-            cout<< *itr << endl;
+            //cout<< *itr << endl;
             cubePosList[*itr] = randomPos();
     
         }
@@ -527,15 +526,20 @@ vec3 Window::randomPos() {
 }
 
 void Window::moveSphereObj() {
-    int hitWall = walls->ballHitWall(spherePos, sphereRadius);
-    //cout<< hitWall<<endl;
+    int hitWall = walls->ballHitWall(spherePos, sphereRadius, direction);
+    //int threshold = 3.0f;
+    
     if(hitWall != -1) {
+        cout<< "current hit" <<endl;
         direction = walls->reflection(direction, hitWall);
     }
+    
     translateM = glm::translate(mat4(1.0f), normalize(direction)*speed);
     sphereObj->toWorld = translateM * sphereObj->toWorld;
     vec4 result = translateM * vec4(spherePos,1.0);
     spherePos = vec3(result.x, result.y, result.z);
+    
+    
 }
 glm::vec3 Window::trackBallMapping(double x, double y) {
     glm::vec3 v;

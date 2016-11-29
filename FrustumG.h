@@ -13,7 +13,6 @@
 
 
 
-
 class FrustumG 
 {
 private:
@@ -46,7 +45,7 @@ public:
 	void setCamDef(vec3 p, vec3 l, vec3 u);
     void setCubePlanes(float length);
     bool sphereInFrustum(vec3 p, float r);
-    int ballHitWall(vec3 p, float r);
+    int ballHitWall(vec3 p, float r, vec3 direction);
     vec3 reflection(vec3 curDir, int plane);
 
 
