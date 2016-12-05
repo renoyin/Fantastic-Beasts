@@ -23,6 +23,7 @@
 #include "MatrixTransform.h"
 #include "FrustumG.h"
 #include "Bezier.h"
+#include "ParticleGenerator.hpp"
 #include <unordered_set>
 using namespace std;
 //#include <nanogui/nanogui.h>
@@ -33,6 +34,8 @@ class Window
 public:
 	static int width;
 	static int height;
+    static vec3 spherePos;
+    static float speed;
 	static glm::mat4 P; // P for projection
 	static glm::mat4 V; // V for view
     //static double mouseX;

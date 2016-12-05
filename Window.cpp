@@ -5,7 +5,7 @@
 using namespace std;
 
 const char* window_title = "GLFW Starter Project";
-GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram;
+GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram, particleShaderProgram;
 
 
 // On some systems you need to change this to the absolute path
@@ -46,6 +46,7 @@ Bezier* curve;
 Cube* gameBox;
 Cube* lightBox;
 Cube* sphereBound;
+ParticleGenerator* particles;
 //Cube* cubeObj;
 //Sphere* outBound;
 vector<Geode*> obstacleList;
@@ -85,10 +86,10 @@ GLuint planeVAO, planeVBO;
 vec3 Window::direction(-1,-2, 4);
 //vec3 direction = Window::randomPos();
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
-vec3 spherePos(0,0,0);
+vec3 Window::spherePos(0,0,0);
 float sphereRadius = 4;
 float obstacleRadius = 3;
-float speed = 0.5f;
+float Window::speed = 0.5f;
 bool eliminate = false;
 int lastHitWall = -1;
 
@@ -117,6 +118,9 @@ void Window::initialize_objects()
     // light
     lightBox = new Cube(2.0);
     
+    //particles
+    particles = new ParticleGenerator(1000);
+    
     //cube object
     for(int i=0; i<10; i++) {
         Cube* cubeObj = new Cube(obstacleRadius);
@@ -136,7 +140,7 @@ void Window::initialize_objects()
     lightShaderProgram = LoadShaders("./light.vert", "./light.frag");
     gameboxShaderProgram = LoadShaders("./gamebox.vert", "./gamebox.frag");
     depthShaderProgram = LoadShaders("./depthShader.vert", "./depthShader.frag");
-
+    particleShaderProgram = LoadShaders("./particle.vert", "./particle.frag");
     
     
     // Plane
@@ -192,6 +196,7 @@ void Window::clean_up()
     delete(walls);
     delete(gameBox);
     delete(lightBox);
+    
     glDeleteProgram(skyboxShaderProgram);
 	glDeleteProgram(sphereShaderProgram);
     glDeleteProgram(gameboxShaderProgram);
@@ -384,6 +389,13 @@ void Window::display_callback(GLFWwindow* window)
     
         }
     }
+    
+    //particles
+    glUseProgram(particleShaderProgram);
+    particles->Draw(particleShaderProgram);
+    particles->Update(0.6f, 2, vec3(obstacleRadius/2));
+    
+    
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
