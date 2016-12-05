@@ -86,7 +86,7 @@ vec3 Window::direction(-1,-2, 4);
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
 float sphereRadius = 4;
-float obstacleRadius = 4;
+float obstacleRadius = 2;
 float speed = 1.0f;
 bool eliminate = false;
 int lastHitWall = -1;
@@ -120,12 +120,13 @@ void Window::initialize_objects()
     for(int i=0; i<5; i++) {
         Cube* cubeObj = new Cube();
         Sphere* obstacle= new Sphere(obstacleRadius, 12, 24);
-        obstacle->toWorld = translate(mat4(1.0f), randomPos()) * obstacle->toWorld;
+        vec3 newpos = randomPos();
+        obstacle->toWorld = translate(mat4(1.0f), newpos);
         obstacle->solid = true;
         obstacle->ifDraw = true;
         obstacleList.push_back(obstacle);
         outBoundList.push_back(cubeObj);
-        obstaclePosList.push_back(randomPos());
+        obstaclePosList.push_back(newpos);
     }
     
 	// Load the shader program. Make sure you have the correct filepath up top
@@ -343,15 +344,19 @@ void Window::display_callback(GLFWwindow* window)
     
     //draw the wire frame
    // glUseProgram(sphereShaderProgram);
+    glUseProgram(gameboxShaderProgram);
     for(int i=0; i<obstaclePosList.size(); i++) {
-
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(collisionList.find(i)== collisionList.end()) {
-            outBoundList[i]->color = vec3(0.0,0.0,0.0);
+            glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+            glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+            outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
         else {
-            outBoundList[i]->color = vec3(1.0f,0.0f,0.0f);
+            glm::vec3 frameColor = glm::vec3(1.0f,0.0f,0.0f);
+            glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+            outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
-        outBoundList[i]->drawFrame(lightShaderProgram, mat4(1.0f));
     }
     
     //eliminate mode
@@ -508,7 +513,6 @@ unordered_set<int> Window::checkCollision() {
                 vec3 R = reflect(I, normalize(norm));
                 direction = R;
                 res.insert(i);
-            
         }
     }
     return res;
