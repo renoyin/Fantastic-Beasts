@@ -20,9 +20,9 @@
 class Cube : public Geode
 {
 public:
-	Cube();
+	Cube(float size);
 	~Cube();
-
+    bool ifDraw = true;
     void draw(GLuint, glm::mat4);
     void drawFrame(GLuint, glm::mat4);
     //void update(glm::mat4);

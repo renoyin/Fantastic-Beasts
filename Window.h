@@ -62,6 +62,7 @@ public:
     
     static void moveSphereObj();
     static unordered_set<int> checkCollision();
+    static unordered_set<int> checkCollisionBetweenObstacle();
     static vec3 randomPos();
     static vec3 direction;
 };

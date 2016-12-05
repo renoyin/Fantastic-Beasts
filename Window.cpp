@@ -45,6 +45,7 @@ skybox* skybox;
 Bezier* curve;
 Cube* gameBox;
 Cube* lightBox;
+Cube* sphereBound;
 //Cube* cubeObj;
 //Sphere* outBound;
 vector<Geode*> obstacleList;
@@ -86,8 +87,8 @@ vec3 Window::direction(-1,-2, 4);
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
 float sphereRadius = 4;
-float obstacleRadius = 2;
-float speed = 1.0f;
+float obstacleRadius = 3;
+float speed = 0.5f;
 bool eliminate = false;
 int lastHitWall = -1;
 
@@ -109,16 +110,16 @@ void Window::initialize_objects()
     walls->setCubePlanes(40);
     // Sphere ojbect
     sphereObj = new Sphere(sphereRadius, 12, 24);
-    
+    sphereBound = new Cube(sphereRadius);
     // Game box
-    gameBox = new Cube();
+    gameBox = new Cube(2.0);
     
     // light
-    lightBox = new Cube();
+    lightBox = new Cube(2.0);
     
     //cube object
-    for(int i=0; i<5; i++) {
-        Cube* cubeObj = new Cube();
+    for(int i=0; i<10; i++) {
+        Cube* cubeObj = new Cube(obstacleRadius);
         Sphere* obstacle= new Sphere(obstacleRadius, 12, 24);
         vec3 newpos = randomPos();
         obstacle->toWorld = translate(mat4(1.0f), newpos);
@@ -333,7 +334,7 @@ void Window::display_callback(GLFWwindow* window)
 
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
-   
+    unordered_set<int> obstacleCollisionList = checkCollisionBetweenObstacle();
 
     //draw obstacle
     for(int i=0; i<obstaclePosList.size(); i++) {
@@ -345,9 +346,20 @@ void Window::display_callback(GLFWwindow* window)
     //draw the wire frame
    // glUseProgram(sphereShaderProgram);
     glUseProgram(gameboxShaderProgram);
+    
+    if(collisionList.size()>0) {
+        glm::vec3 frameColor = glm::vec3(1.0,0.0,0.0);
+        glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+        sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
+    }
+    else {
+        glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+        glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+        sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
+    }
     for(int i=0; i<obstaclePosList.size(); i++) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        if(collisionList.find(i)== collisionList.end()) {
+        if(collisionList.find(i)== collisionList.end() && obstacleCollisionList.find(i)== obstacleCollisionList.end()) {
             glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
             glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
             outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
@@ -358,14 +370,17 @@ void Window::display_callback(GLFWwindow* window)
             outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
     }
+
     
     //eliminate mode
     if(eliminate) {
         for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
             //cout<< *itr << endl;
-            vec3 newpos = randomPos();
-            obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
-            obstaclePosList[*itr] = newpos;
+            if(*itr!=-1) {
+                vec3 newpos = randomPos();
+                obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
+                obstaclePosList[*itr] = newpos;
+            }
     
         }
     }
@@ -433,6 +448,8 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
             for(int i=0; i<outBoundList.size(); i++) {
                 outBoundList[i]->ifDraw = !outBoundList[i]->ifDraw;
             }
+            sphereBound->ifDraw = !sphereBound->ifDraw;
+
         }
         if(key == GLFW_KEY_C) {
             direction = Window::randomPos();
@@ -516,8 +533,38 @@ unordered_set<int> Window::checkCollision() {
         }
     }
     return res;
+}
+
+unordered_set<int> Window::checkCollisionBetweenObstacle() {
+    unordered_set<int> res;
+    //check collision between obstacle
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        for(int j=i+1; j<obstaclePosList.size(); j++) {
+            float aminx = obstaclePosList[i].x-obstacleRadius;
+            float amaxx = obstaclePosList[i].x+obstacleRadius;
+            float aminy = obstaclePosList[i].y-obstacleRadius;
+            float amaxy = obstaclePosList[i].y+obstacleRadius;
+            float aminz = obstaclePosList[i].z-obstacleRadius;
+            float amaxz = obstaclePosList[i].z+obstacleRadius;
+            
+            float bminx = obstaclePosList[j].x-obstacleRadius;
+            float bmaxx = obstaclePosList[j].x+obstacleRadius;
+            float bminy = obstaclePosList[j].y-obstacleRadius;
+            float bmaxy = obstaclePosList[j].y+obstacleRadius;
+            float bminz = obstaclePosList[j].z-obstacleRadius;
+            float bmaxz = obstaclePosList[j].z+obstacleRadius;
+
+            if((aminx <= bmaxx && amaxx >= bminx) && (aminy <= bmaxy && amaxy >= bminy) && (aminz <= bmaxz && amaxz >= bminz)) {
+                cout<<i<<"collides with "<<j<<endl;
+                res.insert(i);
+                res.insert(j);
+            }
+        }
+    }
+    return res;
     
 }
+
 vec3 Window::randomPos() {
     vec3 res(0);
     vector<double> ran;
