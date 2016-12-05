@@ -539,7 +539,8 @@ unordered_set<int> Window::checkCollisionBetweenObstacle() {
     unordered_set<int> res;
     //check collision between obstacle
     for(int i=0; i<obstaclePosList.size(); i++) {
-        for(int j=i+1; j<obstaclePosList.size(); j++) {
+        for(int j=0; j<obstaclePosList.size(); j++) {
+            if(i==j) continue;
             float aminx = obstaclePosList[i].x-obstacleRadius;
             float amaxx = obstaclePosList[i].x+obstacleRadius;
             float aminy = obstaclePosList[i].y-obstacleRadius;
