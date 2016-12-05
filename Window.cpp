@@ -47,9 +47,9 @@ Cube* gameBox;
 Cube* lightBox;
 //Cube* cubeObj;
 //Sphere* outBound;
-vector<Geode*> cubeList;
-vector<Geode*> outBoundList;
-vector<vec3> cubePosList;
+vector<Geode*> obstacleList;
+vector<Cube*> outBoundList;
+vector<vec3> obstaclePosList;
 Group* cubeGroup;
 Group* boundGroup;
 unsigned char pixel[4];
@@ -86,7 +86,7 @@ vec3 Window::direction(-1,-2, 4);
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
 vec3 spherePos(0,0,0);
 float sphereRadius = 4;
-float outBoundRadius = 3.5;
+float obstacleRadius = 4;
 float speed = 1.0f;
 bool eliminate = false;
 int lastHitWall = -1;
@@ -117,14 +117,15 @@ void Window::initialize_objects()
     lightBox = new Cube();
     
     //cube object
-    for(int i=0; i<20; i++) {
+    for(int i=0; i<5; i++) {
         Cube* cubeObj = new Cube();
-        Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
-        outBound->solid = false;
-        outBound->ifDraw = true;
-        cubeList.push_back(cubeObj);
-        outBoundList.push_back(outBound);
-        cubePosList.push_back(randomPos());
+        Sphere* obstacle= new Sphere(obstacleRadius, 12, 24);
+        obstacle->toWorld = translate(mat4(1.0f), randomPos()) * obstacle->toWorld;
+        obstacle->solid = true;
+        obstacle->ifDraw = true;
+        obstacleList.push_back(obstacle);
+        outBoundList.push_back(cubeObj);
+        obstaclePosList.push_back(randomPos());
     }
     
 	// Load the shader program. Make sure you have the correct filepath up top
@@ -333,16 +334,16 @@ void Window::display_callback(GLFWwindow* window)
     unordered_set<int> collisionList = checkCollision();
    
 
-    //draw cubes
-    for(int i=0; i<cubePosList.size(); i++) {
+    //draw obstacle
+    for(int i=0; i<obstaclePosList.size(); i++) {
         //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
         //outBoundList[i]->color =vec3(1.0f,0.0f,0.0f);
-        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        obstacleList[i]->draw(lightShaderProgram, mat4(1.0f));
     }
     
     //draw the wire frame
-    glUseProgram(sphereShaderProgram);
-    for(int i=0; i<cubePosList.size(); i++) {
+   // glUseProgram(sphereShaderProgram);
+    for(int i=0; i<obstaclePosList.size(); i++) {
 
         if(collisionList.find(i)== collisionList.end()) {
             outBoundList[i]->color = vec3(0.0,0.0,0.0);
@@ -350,14 +351,16 @@ void Window::display_callback(GLFWwindow* window)
         else {
             outBoundList[i]->color = vec3(1.0f,0.0f,0.0f);
         }
-        outBoundList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        outBoundList[i]->drawFrame(lightShaderProgram, mat4(1.0f));
     }
     
     //eliminate mode
     if(eliminate) {
         for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
             //cout<< *itr << endl;
-            cubePosList[*itr] = randomPos();
+            vec3 newpos = randomPos();
+            obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
+            obstaclePosList[*itr] = newpos;
     
         }
     }
@@ -493,14 +496,14 @@ void Window::do_movement() {
 
 unordered_set<int> Window::checkCollision() {
     unordered_set<int> res;
-    for(int i=0; i<cubePosList.size(); i++) {
-        float r = sphereRadius + outBoundRadius;
-        float dis = length(spherePos - cubePosList[i]);
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        float r = sphereRadius + obstacleRadius;
+        float dis = length(spherePos - obstaclePosList[i]);
         //float angle = acos(dot(normalize(direction), pl[curWall].normal))/3.14*180;
-        float angle = acos(dot(normalize(direction), normalize(spherePos-cubePosList[i])))/3.14*180;
+        float angle = acos(dot(normalize(direction), normalize(spherePos-obstaclePosList[i])))/3.14*180;
         if (dis < r && angle>90) {
             
-                vec3 norm = spherePos - cubePosList[i];
+                vec3 norm = spherePos - obstaclePosList[i];
                 vec3 I = normalize(direction);
                 vec3 R = reflect(I, normalize(norm));
                 direction = R;
