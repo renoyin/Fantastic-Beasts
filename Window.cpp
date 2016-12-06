@@ -71,7 +71,7 @@ GLfloat aspect = 45.0f;
 bool keys[1024];
 
 // light
-glm::vec3 dirLightDirection = glm::vec3(-0.2f, -1.0f, -0.3f);
+glm::vec3 dirLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
 glm::vec3 pointLightPosition = glm::vec3(0.0f,  5.0f,  0.0f);
 
 // Shadow mapping
@@ -117,7 +117,7 @@ void Window::initialize_objects()
     lightBox = new Cube();
     
     //cube object
-    for(int i=0; i<20; i++) {
+    for(int i=0; i<3; i++) {
         Cube* cubeObj = new Cube();
         Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
         outBound->solid = false;
@@ -177,6 +177,10 @@ void Window::initialize_objects()
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "Something wrong with framebuffer" << std::endl;
+    else
+        std::cout << "framebuffer is ok" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -282,6 +286,53 @@ void Window::display_callback(GLFWwindow* window)
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    
+    
+    // Shadow mapping
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
+    GLfloat near_plane = 1.0f, far_plane = 40.0f;
+    lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
+    lightView = glm::lookAt(pointLightPosition, glm::vec3(0.0f), glm::vec3(0.0, 0.0, 1.0));
+    lightSpaceMatrix = lightProjection * lightView;
+    // - render scene from light's point of view
+    glUseProgram(depthShaderProgram);
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    //RenderScene(depthShaderProgram);
+    // Floor
+    glm::mat4 model;
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glBindVertexArray(planeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Reset viewport
+    glViewport(0, 0, Window::width, Window::height);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    
+    // Render quad
+    glUseProgram(gameboxShaderProgram);
+    glm::mat4 mvp = Window::P * Window::V;
+    // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
+    // Consequently, we need to forward the projection, view, and model matrices to the shader programs
+    // Get the location of the uniform variables "projection" and "modelview"
+    GLuint mvpUniform = glGetUniformLocation(gameboxShaderProgram, "MVP");
+    GLuint modelUniform = glGetUniformLocation(gameboxShaderProgram, "model");
+    // Now send these values to the shader program
+    glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(glm::vec3(1.0f)));
+    glUniform3f(glGetUniformLocation(gameboxShaderProgram, "colorin"), 1.0f, 1.0f, 1.0f);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    RenderQuad();
+    
+    
+    
+    
     // Skybox
     //glUseProgram(skyboxShaderProgram);
     //skybox->draw(skyboxShaderProgram);
@@ -313,7 +364,7 @@ void Window::display_callback(GLFWwindow* window)
     glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.75164f, 0.60648f, 0.22648f);
     glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.628281f, 0.555802f, 0.366065f);
     // Mode -> point light
-    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
+    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 1);
     
     //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
     //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
@@ -361,31 +412,7 @@ void Window::display_callback(GLFWwindow* window)
     
         }
     }
-    // Shadow mapping
-    glm::mat4 lightProjection, lightView;
-    glm::mat4 lightSpaceMatrix;
-    GLfloat near_plane = 1.0f, far_plane = 7.5f;
-    lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-    lightView = glm::lookAt(pointLightPosition, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    lightSpaceMatrix = lightProjection * lightView;
-    // - render scene from light's point of view
-    glUseProgram(depthShaderProgram);
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
-    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    //RenderScene(depthShaderProgram);
-    // Floor
-    glm::mat4 model;
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    glBindVertexArray(planeVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // Reset viewport
-    glViewport(0, 0, Window::width, Window::height);
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
+    
     
     
     // Light box at (0,22,0)
@@ -563,4 +590,33 @@ glm::vec3 Window::trackBallMapping(double x, double y) {
     v.z = sqrtf(1.001 - d * d);
     v = glm::normalize(v); // Still need to normalize, since we only capped d, not v.
     return v;
+}
+
+GLuint quadVAO = 0;
+GLuint quadVBO;
+void Window::RenderQuad()
+{
+    if (quadVAO == 0)
+    {
+        GLfloat quadVertices[] = {
+            // Positions        // Texture Coords
+            -5.0f,  10.0f, 5.0f,  0.0f, 1.0f,
+            -5.0f, 10.0f, -5.0f,  0.0f, 0.0f,
+            5.0f,  10.0f, 5.0f,  1.0f, 1.0f,
+            5.0f, 10.0f, -5.0f,  1.0f, 0.0f,
+        };
+        // Setup plane VAO
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
 }

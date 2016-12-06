@@ -64,6 +64,9 @@ public:
     static unordered_set<int> checkCollision();
     static vec3 randomPos();
     static vec3 direction;
+
+    
+    static void RenderQuad();
 };
 
 #endif

@@ -97,6 +97,9 @@
 		547B5A321DE7C6C400478A68 /* top.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = top.ppm; sourceTree = "<group>"; };
 		54947DFA1DEB709A005B0D19 /* .. */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; path = ..; sourceTree = "<group>"; };
 		54947DFB1DEB70BE005B0D19 /* depthShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = depthShader.frag; path = ../../depthShader.frag; sourceTree = "<group>"; };
+		54E392491DF33EF300965510 /* depthShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = depthShader.vert; path = ../../depthShader.vert; sourceTree = "<group>"; };
+		54E3924A1DF35F5100965510 /* depthMappingShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = depthMappingShader.frag; path = ../../depthMappingShader.frag; sourceTree = "<group>"; };
+		54E3924B1DF3643500965510 /* depthMappingShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = depthMappingShader.vert; path = ../../depthMappingShader.vert; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,6 +136,7 @@
 			isa = PBXGroup;
 			children = (
 				547B5A2C1DE7C6C400478A68 /* skybox_texture */,
+				54947DFA1DEB709A005B0D19 /* .. */,
 				547B59EF1DE7838400478A68 /* README.md */,
 				547B59F71DE7838400478A68 /* main.h */,
 				547B59F61DE7838400478A68 /* main.cpp */,
@@ -142,8 +146,10 @@
 				547B59F81DE7838400478A68 /* shader.cpp */,
 				547470151DEA9B9E0003D758 /* light.vert */,
 				547470141DEA9B9E0003D758 /* light.frag */,
-				54947DFA1DEB709A005B0D19 /* .. */,
+				54E392491DF33EF300965510 /* depthShader.vert */,
 				54947DFB1DEB70BE005B0D19 /* depthShader.frag */,
+				54E3924A1DF35F5100965510 /* depthMappingShader.frag */,
+				54E3924B1DF3643500965510 /* depthMappingShader.vert */,
 				547B59F21DE7838400478A68 /* skybox.h */,
 				547B59F01DE7838400478A68 /* skybox.cpp */,
 				547B59F41DE7838400478A68 /* skybox.vert */,
