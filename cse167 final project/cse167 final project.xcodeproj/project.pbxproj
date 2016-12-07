@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5442F76F1DF776FF003179E8 /* ParticleGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */; };
 		5474701B1DEAD0AE0003D758 /* cubeFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5474701A1DEAD0AE0003D758 /* cubeFrame.cpp */; };
 		547B59FA1DE7838400478A68 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 547B59EF1DE7838400478A68 /* README.md */; };
 		547B59FB1DE7838400478A68 /* skybox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 547B59F01DE7838400478A68 /* skybox.cpp */; };
@@ -41,6 +42,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5442F7691DF776FF003179E8 /* particle.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.frag; path = ../../particle.frag; sourceTree = "<group>"; };
+		5442F76A1DF776FF003179E8 /* particle.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.vert; path = ../../particle.vert; sourceTree = "<group>"; };
+		5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParticleGenerator.cpp; path = ../../ParticleGenerator.cpp; sourceTree = "<group>"; };
+		5442F76C1DF776FF003179E8 /* ParticleGenerator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ParticleGenerator.hpp; path = ../../ParticleGenerator.hpp; sourceTree = "<group>"; };
+		5442F76D1DF776FF003179E8 /* shader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = shader.frag; path = ../../shader.frag; sourceTree = "<group>"; };
+		5442F76E1DF776FF003179E8 /* shader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = shader.vert; path = ../../shader.vert; sourceTree = "<group>"; };
 		547470141DEA9B9E0003D758 /* light.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = light.frag; path = ../../light.frag; sourceTree = "<group>"; };
 		547470151DEA9B9E0003D758 /* light.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = light.vert; path = ../../light.vert; sourceTree = "<group>"; };
 		547470161DEAAE860003D758 /* sphere.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = sphere.vert; path = ../../sphere.vert; sourceTree = "<group>"; };
@@ -140,6 +147,12 @@
 				547B59EF1DE7838400478A68 /* README.md */,
 				547B59F71DE7838400478A68 /* main.h */,
 				547B59F61DE7838400478A68 /* main.cpp */,
+				5442F7691DF776FF003179E8 /* particle.frag */,
+				5442F76A1DF776FF003179E8 /* particle.vert */,
+				5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */,
+				5442F76C1DF776FF003179E8 /* ParticleGenerator.hpp */,
+				5442F76D1DF776FF003179E8 /* shader.frag */,
+				5442F76E1DF776FF003179E8 /* shader.vert */,
 				547B5A051DE7858500478A68 /* Window.h */,
 				547B5A041DE7858500478A68 /* Window.cpp */,
 				547B59F91DE7838400478A68 /* shader.h */,
@@ -148,8 +161,8 @@
 				547470141DEA9B9E0003D758 /* light.frag */,
 				54E392491DF33EF300965510 /* depthShader.vert */,
 				54947DFB1DEB70BE005B0D19 /* depthShader.frag */,
-				54E3924A1DF35F5100965510 /* depthMappingShader.frag */,
 				54E3924B1DF3643500965510 /* depthMappingShader.vert */,
+				54E3924A1DF35F5100965510 /* depthMappingShader.frag */,
 				547B59F21DE7838400478A68 /* skybox.h */,
 				547B59F01DE7838400478A68 /* skybox.cpp */,
 				547B59F41DE7838400478A68 /* skybox.vert */,
@@ -271,6 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				547B5A171DE7881D00478A68 /* Cube.cpp in Sources */,
+				5442F76F1DF776FF003179E8 /* ParticleGenerator.cpp in Sources */,
 				547B5A161DE7881D00478A68 /* OBJObject.cpp in Sources */,
 				547B5A231DE788A900478A68 /* FrustumG.cpp in Sources */,
 				547B5A1A1DE7881D00478A68 /* Geode.cpp in Sources */,

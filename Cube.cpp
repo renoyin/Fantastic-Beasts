@@ -1,9 +1,9 @@
 #include "Cube.h"
 #include "Window.h"
 
-Cube::Cube()
+Cube::Cube(float size)
 {
-	toWorld = glm::mat4(1.0f);
+	toWorld = scale(mat4(1.0f), vec3(size/2));
 
 	// Create array object and buffers. Remember to delete your buffers when the object is destroyed!
 	glGenVertexArrays(1, &VAO);
@@ -56,49 +56,65 @@ Cube::~Cube()
 
 void Cube::draw(GLuint shaderProgram, glm::mat4 C)
 {
-    //toWorld = C*toWorld;
-    glm::mat4 mvp = Window::P * Window::V * C * toWorld;
-    // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
-    // Consequently, we need to forward the projection, view, and model matrices to the shader programs
-    // Get the location of the uniform variables "projection" and "modelview"
-    GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
-    GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
-    // Now send these values to the shader program
-    glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
-    glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
+    if(ifDraw) {
+        
+        if(isShadowMapping) {
+            glBindVertexArray(VAO);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+            // Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            // Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
+            glBindVertexArray(0);
+            return;
+        }
+        
+        glm::mat4 mvp = Window::P * Window::V * C * this->toWorld;
+        // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
+        // Consequently, we need to forward the projection, view, and model matrices to the shader programs
+        // Get the location of the uniform variables "projection" and "modelview"
+        GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
+        GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+        // Now send these values to the shader program
+        glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
+        glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
+        glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
 
-	// Now draw the cube. We simply need to bind the VAO associated with it.
-	glBindVertexArray(VAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	// Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-	// Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
-	glBindVertexArray(0);
+        // Now draw the cube. We simply need to bind the VAO associated with it.
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        // Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        // Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
+        glBindVertexArray(0);
+    }
+    
+    
 }
 
 void Cube::drawFrame(GLuint shaderProgram, glm::mat4 C) {
     //toWorld = C*toWorld;
-    glm::mat4 mvp = Window::P * Window::V * C * toWorld;
-    // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
-    // Consequently, we need to forward the projection, view, and model matrices to the shader programs
-    // Get the location of the uniform variables "projection" and "modelview"
-    GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
-    GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
-    // Now send these values to the shader program
-    glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
-    
-        // Now draw the cube. We simply need to bind the VAO associated with it.
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, FEBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(frameIndices), frameIndices, GL_STATIC_DRAW);
-    // Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
-    glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
-    glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, (GLvoid*)(4*sizeof(GLushort)));
-    glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, (GLvoid*)(8*sizeof(GLushort)));
-    // Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
-    glBindVertexArray(0);
-
+    if(ifDraw) {
+        glm::mat4 mvp = Window::P * Window::V * C * toWorld;
+        // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
+        // Consequently, we need to forward the projection, view, and model matrices to the shader programs
+        // Get the location of the uniform variables "projection" and "modelview"
+        GLuint mvpUniform = glGetUniformLocation(shaderProgram, "MVP");
+        GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+        // Now send these values to the shader program
+        glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
+        glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
+        
+            // Now draw the cube. We simply need to bind the VAO associated with it.
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, FEBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(frameIndices), frameIndices, GL_STATIC_DRAW);
+        // Tell OpenGL to draw with triangles, using 36 indices, the type of the indices, and the offset to start from
+        glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, (GLvoid*)(4*sizeof(GLushort)));
+        glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, (GLvoid*)(8*sizeof(GLushort)));
+        // Unbind the VAO when we're done so we don't accidentally draw extra stuff or tamper with its bound buffers
+        glBindVertexArray(0);
+    }
 }

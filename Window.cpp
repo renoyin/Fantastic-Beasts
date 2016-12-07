@@ -5,7 +5,8 @@
 using namespace std;
 
 const char* window_title = "GLFW Starter Project";
-GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram;
+GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram, particleShaderProgram,
+    shadowMappingShaderProgram;
 
 
 // On some systems you need to change this to the absolute path
@@ -45,11 +46,13 @@ skybox* skybox;
 Bezier* curve;
 Cube* gameBox;
 Cube* lightBox;
+Cube* sphereBound;
+ParticleGenerator* particles;
 //Cube* cubeObj;
 //Sphere* outBound;
-vector<Geode*> cubeList;
-vector<Geode*> outBoundList;
-vector<vec3> cubePosList;
+vector<Geode*> obstacleList;
+vector<Cube*> outBoundList;
+vector<vec3> obstaclePosList;
 Group* cubeGroup;
 Group* boundGroup;
 unsigned char pixel[4];
@@ -84,10 +87,10 @@ GLuint planeVAO, planeVBO;
 vec3 Window::direction(-1,-2, 4);
 //vec3 direction = Window::randomPos();
 mat4 translateM = mat4(1.0f); //glm::translate(mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)) * ;
-vec3 spherePos(0,0,0);
+vec3 Window::spherePos(0,0,0);
 float sphereRadius = 4;
-float outBoundRadius = 3.5;
-float speed = 1.0f;
+float obstacleRadius = 3;
+float Window::speed = 0.5f;
 bool eliminate = false;
 int lastHitWall = -1;
 
@@ -109,22 +112,27 @@ void Window::initialize_objects()
     walls->setCubePlanes(40);
     // Sphere ojbect
     sphereObj = new Sphere(sphereRadius, 12, 24);
-    
+    sphereBound = new Cube(sphereRadius);
     // Game box
-    gameBox = new Cube();
+    gameBox = new Cube(2.0);
     
     // light
-    lightBox = new Cube();
+    lightBox = new Cube(2.0);
+    
+    //particles
+    particles = new ParticleGenerator(1000);
     
     //cube object
     for(int i=0; i<3; i++) {
-        Cube* cubeObj = new Cube();
-        Sphere* outBound = new Sphere(outBoundRadius, 12, 24);
-        outBound->solid = false;
-        outBound->ifDraw = true;
-        cubeList.push_back(cubeObj);
-        outBoundList.push_back(outBound);
-        cubePosList.push_back(randomPos());
+        Cube* cubeObj = new Cube(obstacleRadius);
+        Sphere* obstacle= new Sphere(obstacleRadius, 12, 24);
+        vec3 newpos = randomPos();
+        obstacle->toWorld = translate(mat4(1.0f), newpos);
+        obstacle->solid = true;
+        obstacle->ifDraw = true;
+        obstacleList.push_back(obstacle);
+        outBoundList.push_back(cubeObj);
+        obstaclePosList.push_back(newpos);
     }
     
 	// Load the shader program. Make sure you have the correct filepath up top
@@ -133,7 +141,8 @@ void Window::initialize_objects()
     lightShaderProgram = LoadShaders("./light.vert", "./light.frag");
     gameboxShaderProgram = LoadShaders("./gamebox.vert", "./gamebox.frag");
     depthShaderProgram = LoadShaders("./depthShader.vert", "./depthShader.frag");
-
+    shadowMappingShaderProgram = LoadShaders("./depthMappingShader.vert", "./depthMappingShader.frag");
+    particleShaderProgram = LoadShaders("./particle.vert", "./particle.frag");
     
     
     // Plane
@@ -193,6 +202,7 @@ void Window::clean_up()
     delete(walls);
     delete(gameBox);
     delete(lightBox);
+    
     glDeleteProgram(skyboxShaderProgram);
 	glDeleteProgram(sphereShaderProgram);
     glDeleteProgram(gameboxShaderProgram);
@@ -288,26 +298,39 @@ void Window::display_callback(GLFWwindow* window)
     
     
     
+    
+    
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
-    glm::mat4 lightSpaceMatrix;
-    GLfloat near_plane = 1.0f, far_plane = 40.0f;
+    glm::mat4 lightMVPMatrix;
+    GLfloat near_plane = -1.0f, far_plane = 40.0f;
     lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-    lightView = glm::lookAt(pointLightPosition, glm::vec3(0.0f), glm::vec3(0.0, 0.0, 1.0));
-    lightSpaceMatrix = lightProjection * lightView;
+    lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0, 0.0, 1.0));
+    lightMVPMatrix = lightProjection * lightView;
     // - render scene from light's point of view
     glUseProgram(depthShaderProgram);
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(lightSpaceMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "lightMVPMatrix"), 1, GL_FALSE, glm::value_ptr(lightMVPMatrix));
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
-    //RenderScene(depthShaderProgram);
-    // Floor
-    glm::mat4 model;
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
-    glBindVertexArray(planeVAO);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
+    
+    // Render scene for shadow mapping
+    Cube* testBox1 = new Cube(2.0f);
+    testBox1->isShadowMapping = true;
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -15.0f, 5.0f));
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
+    testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -15.0f, 5.0f)));
+    delete(testBox1);
+    
+    Cube* testBox2 = new Cube(2.0f);
+    testBox2->isShadowMapping = true;
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    temp = glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -10.0f, -5.0f));
+    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
+    testBox2->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -10.0f, -5.0f)));
+    delete(testBox2);
+    
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // Reset viewport
     glViewport(0, 0, Window::width, Window::height);
@@ -315,22 +338,39 @@ void Window::display_callback(GLFWwindow* window)
     glClear(GL_DEPTH_BUFFER_BIT);
     
     // Render quad
-    glUseProgram(gameboxShaderProgram);
+    glUseProgram(shadowMappingShaderProgram);
     glm::mat4 mvp = Window::P * Window::V;
     // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
     // Consequently, we need to forward the projection, view, and model matrices to the shader programs
     // Get the location of the uniform variables "projection" and "modelview"
-    GLuint mvpUniform = glGetUniformLocation(gameboxShaderProgram, "MVP");
-    GLuint modelUniform = glGetUniformLocation(gameboxShaderProgram, "model");
+    GLuint mvpUniform = glGetUniformLocation(shadowMappingShaderProgram, "shadowMappingMVPMatrix");
     // Now send these values to the shader program
     glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(modelUniform, 1, GL_FALSE, glm::value_ptr(glm::vec3(1.0f)));
-    glUniform3f(glGetUniformLocation(gameboxShaderProgram, "colorin"), 1.0f, 1.0f, 1.0f);
+    //glUniform3f(glGetUniformLocation(shadowMappingShaderProgram, "Color"), 0.7f, 0.7f, 0.7f);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthMap);
     RenderQuad();
     
     
+    
+    
+    
+    
+    // display cubes used for shadow mapping
+    testBox1 = new Cube(2.0f);
+    glUseProgram(gameboxShaderProgram);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glm::vec3 testBoxColor1 = glm::vec3(0.5f, 0.5f, 0.5f);
+    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor1.x);
+    testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -15.0f, 5.0f)));
+    delete(testBox1);
+    testBox2 = new Cube(2.0f);
+    glUseProgram(gameboxShaderProgram);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glm::vec3 testBoxColor2 = glm::vec3(0.5f, 0.5f, 0.5f);
+    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor2.x);
+    testBox2->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -10.0f, -5.0f)));
+    delete(testBox2);
     
     
     // Skybox
@@ -382,37 +422,65 @@ void Window::display_callback(GLFWwindow* window)
 
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
-   
+    unordered_set<int> obstacleCollisionList = checkCollisionBetweenObstacle();
 
-    //draw cubes
-    for(int i=0; i<cubePosList.size(); i++) {
+    //draw obstacle
+    for(int i=0; i<obstaclePosList.size(); i++) {
         //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
         //outBoundList[i]->color =vec3(1.0f,0.0f,0.0f);
-        cubeList[i]->draw(lightShaderProgram, translate(mat4(1.0f),cubePosList[i]));
+        obstacleList[i]->draw(lightShaderProgram, mat4(1.0f));
     }
     
     //draw the wire frame
-    glUseProgram(sphereShaderProgram);
-    for(int i=0; i<cubePosList.size(); i++) {
-
-        if(collisionList.find(i)== collisionList.end()) {
-            outBoundList[i]->color = vec3(0.0,0.0,0.0);
+   // glUseProgram(sphereShaderProgram);
+    glUseProgram(gameboxShaderProgram);
+    
+    if(collisionList.size()>0) {
+        glm::vec3 frameColor = glm::vec3(1.0,0.0,0.0);
+        glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+        sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
+    }
+    else {
+        glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+        glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+        sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
+    }
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if(collisionList.find(i)== collisionList.end() && obstacleCollisionList.find(i)== obstacleCollisionList.end()) {
+            glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+            glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+            outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
         else {
-            outBoundList[i]->color = vec3(1.0f,0.0f,0.0f);
+            glm::vec3 frameColor = glm::vec3(1.0f,0.0f,0.0f);
+            glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
+            outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
-        outBoundList[i]->draw(sphereShaderProgram, translate(mat4(1.0f),cubePosList[i]));
     }
+
     
     //eliminate mode
     if(eliminate) {
         for (auto itr = collisionList.begin(); itr != collisionList.end(); ++itr) {
             //cout<< *itr << endl;
-            cubePosList[*itr] = randomPos();
+            if(*itr!=-1) {
+                vec3 newpos = randomPos();
+                obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
+                obstaclePosList[*itr] = newpos;
+            }
     
         }
     }
     
+
+    
+    //particles
+    glUseProgram(particleShaderProgram);
+    particles->Draw(particleShaderProgram);
+    particles->Update(0.6f, 2, vec3(obstacleRadius/2));
+
+
     
     
     // Light box at (0,22,0)
@@ -452,6 +520,8 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
             for(int i=0; i<outBoundList.size(); i++) {
                 outBoundList[i]->ifDraw = !outBoundList[i]->ifDraw;
             }
+            sphereBound->ifDraw = !sphereBound->ifDraw;
+
         }
         if(key == GLFW_KEY_C) {
             direction = Window::randomPos();
@@ -520,24 +590,54 @@ void Window::do_movement() {
 
 unordered_set<int> Window::checkCollision() {
     unordered_set<int> res;
-    for(int i=0; i<cubePosList.size(); i++) {
-        float r = sphereRadius + outBoundRadius;
-        float dis = length(spherePos - cubePosList[i]);
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        float r = sphereRadius + obstacleRadius;
+        float dis = length(spherePos - obstaclePosList[i]);
         //float angle = acos(dot(normalize(direction), pl[curWall].normal))/3.14*180;
-        float angle = acos(dot(normalize(direction), normalize(spherePos-cubePosList[i])))/3.14*180;
+        float angle = acos(dot(normalize(direction), normalize(spherePos-obstaclePosList[i])))/3.14*180;
         if (dis < r && angle>90) {
             
-                vec3 norm = spherePos - cubePosList[i];
+                vec3 norm = spherePos - obstaclePosList[i];
                 vec3 I = normalize(direction);
                 vec3 R = reflect(I, normalize(norm));
                 direction = R;
                 res.insert(i);
+        }
+    }
+    return res;
+}
+
+unordered_set<int> Window::checkCollisionBetweenObstacle() {
+    unordered_set<int> res;
+    //check collision between obstacle
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        for(int j=0; j<obstaclePosList.size(); j++) {
+            if(i==j) continue;
+            float aminx = obstaclePosList[i].x-obstacleRadius;
+            float amaxx = obstaclePosList[i].x+obstacleRadius;
+            float aminy = obstaclePosList[i].y-obstacleRadius;
+            float amaxy = obstaclePosList[i].y+obstacleRadius;
+            float aminz = obstaclePosList[i].z-obstacleRadius;
+            float amaxz = obstaclePosList[i].z+obstacleRadius;
             
+            float bminx = obstaclePosList[j].x-obstacleRadius;
+            float bmaxx = obstaclePosList[j].x+obstacleRadius;
+            float bminy = obstaclePosList[j].y-obstacleRadius;
+            float bmaxy = obstaclePosList[j].y+obstacleRadius;
+            float bminz = obstaclePosList[j].z-obstacleRadius;
+            float bmaxz = obstaclePosList[j].z+obstacleRadius;
+
+            if((aminx <= bmaxx && amaxx >= bminx) && (aminy <= bmaxy && amaxy >= bminy) && (aminz <= bmaxz && amaxz >= bminz)) {
+                cout<<i<<"collides with "<<j<<endl;
+                res.insert(i);
+                res.insert(j);
+            }
         }
     }
     return res;
     
 }
+
 vec3 Window::randomPos() {
     vec3 res(0);
     vector<double> ran;
@@ -600,10 +700,10 @@ void Window::RenderQuad()
     {
         GLfloat quadVertices[] = {
             // Positions        // Texture Coords
-            -5.0f,  10.0f, 5.0f,  0.0f, 1.0f,
-            -5.0f, 10.0f, -5.0f,  0.0f, 0.0f,
-            5.0f,  10.0f, 5.0f,  1.0f, 1.0f,
-            5.0f, 10.0f, -5.0f,  1.0f, 0.0f,
+            -20.0f,  -20.0f, 20.0f,  1.0f, 1.0f,
+            -20.0f, -20.0f, -20.0f,  1.0f, 0.0f,
+            20.0f,  -20.0f, 20.0f,  0.0f, 1.0f,
+            20.0f, -20.0f, -20.0f,  0.0f, 0.0f,
         };
         // Setup plane VAO
         glGenVertexArrays(1, &quadVAO);
