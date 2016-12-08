@@ -610,6 +610,9 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
         if (key == GLFW_KEY_O) {
             isShowGreyScaleMap = !isShowGreyScaleMap;
         }
+        if(key == GLFW_KEY_P) {
+            drawParticle = !drawParticles;
+        }
     }
     
     else if(action == GLFW_RELEASE)
