@@ -295,7 +295,7 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-    particles->Update(0.1f, 10, vec3(sphereRadius));
+    particles->Update(0.1f, 20, vec3(sphereRadius));
 }
 
 void Window::display_callback(GLFWwindow* window)
