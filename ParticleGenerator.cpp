@@ -30,7 +30,7 @@ void ParticleGenerator::Update(GLfloat dt, GLuint newParticles, glm::vec3 offset
         p.Life -= dt; // reduce life
         if (p.Life > 0.0f)
         {	// particle is alive, thus update
-            p.Position -= p.Velocity * dt;
+            p.Position -= vec3(p.Velocity) * dt;
             p.Color.a -= dt * 2.5;
         }
     }
@@ -39,13 +39,14 @@ void ParticleGenerator::Update(GLfloat dt, GLuint newParticles, glm::vec3 offset
 // Render all particles
 void ParticleGenerator::Draw(GLuint shaderProgram)
 {
+    
     glBindVertexArray(this->VAO);
     glPointSize((2.0f));
     glm::mat4 mvp = Window::P * Window::V;
     GLuint mvpUniform = glGetUniformLocation(shaderProgram, "projection");
     glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
     // Use additive blending to give it a 'glow' effect
-    //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     for (int i=0; i<amount; i++)
     {
         if (particles[i].Life > 0.0f)
@@ -63,7 +64,7 @@ void ParticleGenerator::Draw(GLuint shaderProgram)
     }
     glBindVertexArray(0);
     // Don't forget to reset to default blending mode
-    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void ParticleGenerator::init()
@@ -117,17 +118,22 @@ GLuint ParticleGenerator::firstUnusedParticle()
 
 void ParticleGenerator::respawnParticle(Particle &particle, glm::vec3 offset)
 {
-    GLfloat random = ((rand() % 100) - 50) / 10.0f;
+    GLfloat randomx = ((rand() % 100) - 20) / 10.0f;
+    GLfloat randomy = ((rand() % 100) - 20) / 10.0f;
+    GLfloat randomz = ((rand() % 100) - 20) / 10.0f;
     //cout<<"random="<<random<<endl;
     GLfloat rColorx = 0.5 + ((rand() % 100) / 100.0f);
     GLfloat rColory = 0.5 + ((rand() % 100) / 100.0f);
     GLfloat rColorz = 0.5 + ((rand() % 100) / 100.0f);
     vec3 color = normalize(vec3(rColorx,rColory,rColorz));
+    
+    vec3 dirNorm = normalize(Window::direction);
+    
     //cout<<"color="<<rColor<<endl;
-    particle.Position = Window::spherePos + random + offset;
+    particle.Position = Window::spherePos - dirNorm*vec3(randomx, randomy, randomz) - dirNorm*offset;
     //cout<<"position="<<particle.Position.x<<","<<particle.Position.y<<","<<particle.Position.z<<endl;
     particle.Color = glm::vec4(color, 1.0f);
     particle.Life = 1.0f;
-    particle.Velocity = normalize(Window::direction) * Window::speed * 0.1f;
+    particle.Velocity = normalize(Window::direction) * Window::speed;
     //particle.Velocity = vec3(0.1f);
 }
