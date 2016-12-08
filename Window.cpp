@@ -499,8 +499,10 @@ void Window::display_callback(GLFWwindow* window)
         glm::vec3 frameColor = glm::vec3(1.0,0.0,0.0);
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
-    
-        //glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "randColor"), 1, GL_FALSE, glm::value_ptr(randomColor()));
+        
+        glUseProgram(shadowMappingShaderProgram2);
+        glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "randColor"), 1, GL_FALSE, glm::value_ptr(randomColor()));
+        glUseProgram(gameboxShaderProgram);
     }
     else {
         glm::vec3 frameColor = glm::vec3(1.0,1.0,1.0);
