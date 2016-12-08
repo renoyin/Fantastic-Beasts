@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		543CC09A1DF91C7E0064D526 /* libirrklang.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 543CC0991DF91C7E0064D526 /* libirrklang.dylib */; };
 		5442F76F1DF776FF003179E8 /* ParticleGenerator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */; };
 		5474701B1DEAD0AE0003D758 /* cubeFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5474701A1DEAD0AE0003D758 /* cubeFrame.cpp */; };
 		547B59FA1DE7838400478A68 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 547B59EF1DE7838400478A68 /* README.md */; };
@@ -44,6 +45,7 @@
 /* Begin PBXFileReference section */
 		543CC0971DF8E22C0064D526 /* cubeShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = cubeShader.vert; path = ../../cubeShader.vert; sourceTree = "<group>"; };
 		543CC0981DF8E24D0064D526 /* cubeShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = cubeShader.frag; path = ../../cubeShader.frag; sourceTree = "<group>"; };
+		543CC0991DF91C7E0064D526 /* libirrklang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libirrklang.dylib; path = "../../../../../../../Developer/irrKlang-64bit-1.5.0/bin/macosx-gcc/libirrklang.dylib"; sourceTree = "<group>"; };
 		5442F7691DF776FF003179E8 /* particle.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.frag; path = ../../particle.frag; sourceTree = "<group>"; };
 		5442F76A1DF776FF003179E8 /* particle.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.vert; path = ../../particle.vert; sourceTree = "<group>"; };
 		5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParticleGenerator.cpp; path = ../../ParticleGenerator.cpp; sourceTree = "<group>"; };
@@ -116,6 +118,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				543CC09A1DF91C7E0064D526 /* libirrklang.dylib in Frameworks */,
 				547B5A031DE784F700478A68 /* libglfw.3.2.dylib in Frameworks */,
 				547B5A011DE784D200478A68 /* OpenGL.framework in Frameworks */,
 			);
@@ -210,6 +213,7 @@
 		547B59FF1DE784D200478A68 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				543CC0991DF91C7E0064D526 /* libirrklang.dylib */,
 				547B5A021DE784F700478A68 /* libglfw.3.2.dylib */,
 				547B5A001DE784D200478A68 /* OpenGL.framework */,
 			);
@@ -240,6 +244,7 @@
 				547B59E11DE7835600478A68 /* Sources */,
 				547B59E21DE7835600478A68 /* Frameworks */,
 				547B59E31DE7835600478A68 /* CopyFiles */,
+				543CC09B1DF91CA60064D526 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -281,6 +286,23 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		543CC09B1DF91CA60064D526 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(PRODUCT_NAME)",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "install_name_tool -change /usr/local/lib/libirrklang.dylib @executable_path/libirrklang.dylib \"$TARGET_BUILD_DIR/$PRODUCT_NAME\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		547B59E11DE7835600478A68 /* Sources */ = {
@@ -404,9 +426,11 @@
 				HEADER_SEARCH_PATHS = (
 					/Developer/glm,
 					"/Developer/glfw-3.2.1/include",
+					"/Developer/irrKlang-64bit-1.5.0/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"/Developer/glfw-3.2.1/src",
+					"/Developer/irrKlang-64bit-1.5.0/bin/macosx-gcc",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -419,9 +443,11 @@
 				HEADER_SEARCH_PATHS = (
 					/Developer/glm,
 					"/Developer/glfw-3.2.1/include",
+					"/Developer/irrKlang-64bit-1.5.0/include",
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"/Developer/glfw-3.2.1/src",
+					"/Developer/irrKlang-64bit-1.5.0/bin/macosx-gcc",
 					"$(LOCAL_LIBRARY_DIR)/Frameworks",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
