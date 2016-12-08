@@ -121,9 +121,9 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
 {
     glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
     glUniform1f(glGetUniformLocation(shaderProgram, "material.shininess"), shininess);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "material.ambient"), 3, &ambient[0]);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 3, &diffuse[0]);
-    glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 3, &specular[0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "material.ambient"), 1, &ambient.x);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 1, &diffuse.x);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 1, &specular.x);
     if(ifDraw && !isShadowMapping) {
         //toWorld = C*toWorld;
         glm::mat4 mvp = Window::P * Window::V * C * toWorld;

@@ -64,7 +64,7 @@ int ind = 0;
 Sphere* sphereObj;
 float velocity = 0.0;
 bool isMove = true;
-
+bool drawParticle = true;
 //double mouseX, mouseY;
 
 GLfloat deltaTime = 0.0f;
@@ -297,7 +297,9 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-    particles->Update(0.1f, 20, vec3(sphereRadius));
+    if(drawParticle) {
+        particles->Update(0.1f, 20, vec3(sphereRadius));
+    }
 }
 
 void Window::display_callback(GLFWwindow* window)
@@ -460,13 +462,7 @@ void Window::display_callback(GLFWwindow* window)
 
     //draw obstacle
     for(int i=0; i<obstaclePosList.size(); i++) {
-        //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
-        //outBoundList[i]->color =vec3(1.0f,0.0f,0.0f);
-        glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
-        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.ambient"), 1,&obstacleList[i]->ambient.x);
-        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 1,&obstacleList[i]->diffuse.x);
-        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.specular"), 1,&obstacleList[i]->specular.x);
-        //cout<<"color="<<obstacleList[i]->ambient.x<<","<<obstacleList[i]->ambient.y<<","<<obstacleList[i]->ambient.z<<endl;
+        
         obstacleList[i]->draw(lightShaderProgram, mat4(1.0f));
     }
     
@@ -518,8 +514,10 @@ void Window::display_callback(GLFWwindow* window)
 
     
     //particles
-    glUseProgram(particleShaderProgram);
-    particles->Draw(particleShaderProgram);
+    if(drawParticle) {
+        glUseProgram(particleShaderProgram);
+        particles->Draw(particleShaderProgram);
+    }
     
 
 
@@ -578,6 +576,9 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
             if(speed>0.2f) {
                 speed -= 0.2f;
             }
+        }
+        if(key==GLFW_KEY_P) {
+            drawParticle = !drawParticle;
         }
     }
     
@@ -705,9 +706,9 @@ vec3 Window::randomPos() {
 }
 
 vec3 Window::randomColor() {
-    GLfloat rColorx = 0.5 + ((rand() % 100) / 100.0f);
-    GLfloat rColory = 0.5 + ((rand() % 100) / 100.0f);
-    GLfloat rColorz = 0.5 + ((rand() % 100) / 100.0f);
+    GLfloat rColorx = ((rand() % 100) / 100.0f);
+    GLfloat rColory = ((rand() % 100) / 100.0f);
+    GLfloat rColorz = ((rand() % 100) / 100.0f);
     vec3 color = normalize(vec3(rColorx,rColory,rColorz));
     cout<<"color="<<color.x<<","<<color.y<<","<<color.z<<endl;
     return color;
