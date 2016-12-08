@@ -401,7 +401,7 @@ void Window::display_callback(GLFWwindow* window)
     
     // Render a sub window for grey scale map
     if (isShowGreyScaleMap) {
-        glViewport(0, 0, 200, 200);
+        glViewport(0, 0, 200, height/(float)width * 200);
         float angle = acos(glm::dot(glm::normalize(cam_front), glm::vec3(0.0f, 0.0f, -1.0f)));
         if (cam_front.x >= 0) {
             angle = -angle;
@@ -825,10 +825,10 @@ void Window::RenderGreyScaleMap()
     {
         GLfloat quadVertices[] = {
             // Positions        // Texture Coords
-            -0.8f,  -0.8f, -2.0f,  0.0f, 0.0f,
-            -0.8f, 0.8f, -2.0f,  0.0f, 1.0f,
-            0.8f,  -0.8f, -2.0f,  1.0f, 0.0f,
-            0.8f, 0.8f, -2.0f,  1.0f, 1.0f,
+            -1.0f,  -1.0f, -2.0f,  0.0f, 0.0f,
+            -1.0f, 1.0f, -2.0f,  0.0f, 1.0f,
+            1.0f,  -1.0f, -2.0f,  1.0f, 0.0f,
+            1.0f, 1.0f, -2.0f,  1.0f, 1.0f,
         };
         // Setup plane VAO
         glGenVertexArrays(1, &greyScaleMapVAO);
