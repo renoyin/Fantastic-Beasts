@@ -1,7 +1,10 @@
 #include "window.h"
 #include "glm/gtx/vector_angle.hpp"
 #include <time.h>
+#include <iostream>
+#include "/Developer/irrKlang-64bit-1.5.0/include/irrKlang.h"
 
+using namespace irrklang;
 using namespace std;
 
 const char* window_title = "GLFW Starter Project";
@@ -93,6 +96,10 @@ float obstacleRadius = 3;
 float Window::speed = 0.5f;
 bool eliminate = false;
 int lastHitWall = -1;
+#pragma comment(lib, "irrKlang.lib") // link with irrKlang.dll
+//sound
+ISoundEngine *SoundEngine = createIrrKlangDevice();
+
 
 void Window::initialize_objects()
 {
@@ -134,6 +141,10 @@ void Window::initialize_objects()
         outBoundList.push_back(cubeObj);
         obstaclePosList.push_back(newpos);
     }
+    
+    //sound
+    //SoundEngine = createIrrKlangDevice();
+    SoundEngine->play2D("breakout.ogg", GL_TRUE);
     
 	// Load the shader program. Make sure you have the correct filepath up top
     skyboxShaderProgram = LoadShaders("./skybox.vert", "./skybox.frag");
@@ -202,6 +213,7 @@ void Window::clean_up()
     delete(walls);
     delete(gameBox);
     delete(lightBox);
+    SoundEngine->drop();
     
     glDeleteProgram(skyboxShaderProgram);
 	glDeleteProgram(sphereShaderProgram);
@@ -436,6 +448,7 @@ void Window::display_callback(GLFWwindow* window)
     glUseProgram(gameboxShaderProgram);
     
     if(collisionList.size()>0) {
+        SoundEngine->play2D("solid.ogg", GL_FALSE);
         glm::vec3 frameColor = glm::vec3(1.0,0.0,0.0);
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
@@ -445,6 +458,7 @@ void Window::display_callback(GLFWwindow* window)
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
     }
+    
     for(int i=0; i<obstaclePosList.size(); i++) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(collisionList.find(i)== collisionList.end() && obstacleCollisionList.find(i)== obstacleCollisionList.end()) {
@@ -659,6 +673,7 @@ void Window::moveSphereObj() {
     //int threshold = 3.0f;
     
     if(hitWall != -1) {
+        SoundEngine->play2D("bleep.ogg", GL_FALSE);
         cout<< "current hit" << hitWall << endl;
         direction = walls->reflection(direction, hitWall);
     }
