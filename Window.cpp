@@ -44,6 +44,7 @@ double Window::lastZ = 0.0f;
 
 std::string target = "object";
 std::string control = "object";
+Bezier* bezier;
 FrustumG* walls;
 skybox* skybox;
 Bezier* curve;
@@ -104,7 +105,7 @@ ISoundEngine *SoundEngine = createIrrKlangDevice();
 void Window::initialize_objects()
 {
     
-    
+   
 //    // Skybox
 //    std::vector<const GLchar*> faces;
 //    faces.push_back("./skybox_texture/right.ppm");
@@ -154,6 +155,7 @@ void Window::initialize_objects()
     depthShaderProgram = LoadShaders("./depthShader.vert", "./depthShader.frag");
     shadowMappingShaderProgram = LoadShaders("./depthMappingShader.vert", "./depthMappingShader.frag");
     particleShaderProgram = LoadShaders("./particle.vert", "./particle.frag");
+    bezierShaderProgram = LoadShaders("./bezier.vert", "./bezier.frag");
     
     
     // Plane
@@ -293,11 +295,12 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-
+    particles->Update(0.1f, 10, vec3(sphereRadius));
 }
 
 void Window::display_callback(GLFWwindow* window)
 {
+    
     do_movement();
     moveSphereObj();
     GLfloat currentFrame = glfwGetTime();
@@ -492,7 +495,7 @@ void Window::display_callback(GLFWwindow* window)
     //particles
     glUseProgram(particleShaderProgram);
     particles->Draw(particleShaderProgram);
-    particles->Update(0.6f, 2, vec3(obstacleRadius/2));
+    
 
 
     
@@ -542,6 +545,14 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
         }
         if(key == GLFW_KEY_E) {
             eliminate = !eliminate;
+        }
+        if(key==GLFW_KEY_UP) {
+            speed+=0.2f;
+        }
+        if(key==GLFW_KEY_DOWN) {
+            if(speed>0.2f) {
+                speed -= 0.2f;
+            }
         }
     }
     
