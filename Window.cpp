@@ -392,6 +392,8 @@ void Window::display_callback(GLFWwindow* window)
     glBindTexture(GL_TEXTURE_2D, depthMap);
     glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "lightMVP"), 1, GL_FALSE, glm::value_ptr(lightMVPMatrix));
     glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "biasMatrix"), 1, GL_FALSE, glm::value_ptr(biasMatrix));
+    //glm::vec3 randColor = glm::vec3(glm::linearRand(0.0, 1.0), glm::linearRand(0.0f, 1.0f), glm::linearRand(0.0f, 1.0f));
+    //glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "randColor"), 1, GL_FALSE, glm::value_ptr(randColor));
     RenderQuad();
     
     
@@ -501,6 +503,8 @@ void Window::display_callback(GLFWwindow* window)
         glm::vec3 frameColor = glm::vec3(1.0,0.0,0.0);
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
+    
+        //glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "randColor"), 1, GL_FALSE, glm::value_ptr(randomColor()));
     }
     else {
         glm::vec3 frameColor = glm::vec3(1.0,1.0,1.0);
@@ -602,7 +606,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
             }
         }
         if (key == GLFW_KEY_O) {
-            isShowGreyScaleMap = -isShowGreyScaleMap;
+            isShowGreyScaleMap = !isShowGreyScaleMap;
         }
     }
     

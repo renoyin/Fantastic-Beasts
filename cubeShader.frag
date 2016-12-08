@@ -4,6 +4,7 @@ out vec4 color;
 in vec4 ShadowCoord;
 
 uniform sampler2D shadowMap;
+uniform vec3 randColor;
 
 void main()
 {
@@ -21,4 +22,8 @@ void main()
     vec3 shadow = MaterialAmbientColor +
             visibility * MaterialDiffuseColor * LightColor;
     color = vec4(shadow, 1.0f);
+    //if (length(shadow) >= 0.95)
+    //    color = vec4(randColor, 1.0f);
+    //else
+    //    color = vec4(shadow, 1.0f);
 }
