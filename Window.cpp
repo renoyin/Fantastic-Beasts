@@ -401,18 +401,19 @@ void Window::display_callback(GLFWwindow* window)
     
     // Render a sub window for grey scale map
     if (isShowGreyScaleMap) {
+        glViewport(0, 0, 200, 200);
         float angle = acos(glm::dot(glm::normalize(cam_front), glm::vec3(0.0f, 0.0f, -1.0f)));
         if (cam_front.x >= 0) {
             angle = -angle;
         }
-        //std::cout << glm::to_string(cam_front) << std::endl;
-        greyScaleMap_toWorld = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
-        greyScaleMap_toWorld = glm::translate(glm::mat4(1.0f), cam_pos + cam_front * 5) * greyScaleMap_toWorld;
-        greyScaleMap_toWorld = glm::translate(glm::mat4(1.0f), glm::normalize(glm::cross(cam_front, cam_up))*3) * greyScaleMap_toWorld;
-        greyScaleMap_toWorld = P * V * greyScaleMap_toWorld;
+        //greyScaleMap_toWorld = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        //greyScaleMap_toWorld = glm::translate(glm::mat4(1.0f), cam_pos + glm::normalize(cam_front)) * greyScaleMap_toWorld;
+        //greyScaleMap_toWorld = glm::translate(glm::mat4(1.0f), glm::normalize(glm::cross(cam_front, cam_up))*3) * greyScaleMap_toWorld;
+        greyScaleMap_toWorld = P;
         glUseProgram(shadowMappingShaderProgram);
         glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram, "shadowMappingMVPMatrix"), 1, GL_FALSE, glm::value_ptr(greyScaleMap_toWorld));
         RenderGreyScaleMap();
+        glViewport(0, 0, width, height);
     }
 
     
@@ -551,12 +552,12 @@ void Window::display_callback(GLFWwindow* window)
 
     
     
-    // Light box at (0,22,0)
-    //glUseProgram(gameboxShaderProgram);
-    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    //glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &lightColor.x);
-    //gameBox->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 22.0f, 0.0f)));
+    // Light box
+    glUseProgram(gameboxShaderProgram);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &lightColor.x);
+    gameBox->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), -dirLightDirection));
     
     
     // Game box
@@ -650,6 +651,7 @@ void Window::cursor_callback(GLFWwindow* window, double xpos, double ypos) {
     front.z = -cos(glm::radians(cam_yaw)) * cos(glm::radians(cam_pitch));
     cam_front = glm::normalize(front);
     V = glm::lookAt(cam_pos, cam_front + cam_pos, cam_up);
+    
 }
 
 void Window::scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
@@ -710,7 +712,7 @@ unordered_set<int> Window::checkCollisionBetweenObstacle() {
             float bmaxz = obstaclePosList[j].z+obstacleRadius;
 
             if((aminx <= bmaxx && amaxx >= bminx) && (aminy <= bmaxy && amaxy >= bminy) && (aminz <= bmaxz && amaxz >= bminz)) {
-                cout<<i<<"collides with "<<j<<endl;
+                //cout<<i<<"collides with "<<j<<endl;
                 res.insert(i);
                 res.insert(j);
             }
@@ -741,7 +743,7 @@ vec3 Window::randomColor() {
     GLfloat rColory = ((rand() % 100) / 100.0f);
     GLfloat rColorz = ((rand() % 100) / 100.0f);
     vec3 color = normalize(vec3(rColorx,rColory,rColorz));
-    cout<<"color="<<color.x<<","<<color.y<<","<<color.z<<endl;
+    //cout<<"color="<<color.x<<","<<color.y<<","<<color.z<<endl;
     return color;
 }
 
@@ -823,10 +825,10 @@ void Window::RenderGreyScaleMap()
     {
         GLfloat quadVertices[] = {
             // Positions        // Texture Coords
-            -0.8f,  -0.8f, 0.0f,  1.0f, 1.0f,
-            -0.8f, 0.8f, 0.0f,  1.0f, 0.0f,
-            0.8f,  -0.8f, 0.0f,  0.0f, 1.0f,
-            0.8f, 0.8f, 0.0f,  0.0f, 0.0f,
+            -0.8f,  -0.8f, -2.0f,  0.0f, 0.0f,
+            -0.8f, 0.8f, -2.0f,  0.0f, 1.0f,
+            0.8f,  -0.8f, -2.0f,  1.0f, 0.0f,
+            0.8f, 0.8f, -2.0f,  1.0f, 1.0f,
         };
         // Setup plane VAO
         glGenVertexArrays(1, &greyScaleMapVAO);
