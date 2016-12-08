@@ -5,6 +5,10 @@
 
 class Geode : public Node {
 public:
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shininess;
     bool ifDraw = true;
     bool ifCollide = false;
     glm::vec3 color = glm::vec3(0, 0, 0);

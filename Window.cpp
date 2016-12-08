@@ -136,9 +136,10 @@ void Window::initialize_objects()
     particles = new ParticleGenerator(1000);
     
     //cube object
-    for(int i=0; i<3; i++) {
+    for(int i=0; i<8; i++) {
         Cube* cubeObj = new Cube(obstacleRadius);
         Sphere* obstacle= new Sphere(obstacleRadius, 12, 24);
+        obstacle->color = randomColor();
         vec3 newpos = randomPos();
         obstacle->toWorld = translate(mat4(1.0f), newpos);
         obstacle->solid = true;
@@ -456,16 +457,24 @@ void Window::display_callback(GLFWwindow* window)
     //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
     //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
     //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
+    
+    //sphere object
+    glUseProgram(lightShaderProgram);
     sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
+    
+    
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     
     glUseProgram(lightShaderProgram);
+    
+   
+    //    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), obstacleList[0]->shininess);
+//    glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.ambient"), 3,&obstacleList[0]->ambient[0]);
+//    glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 3,&obstacleList[0]->diffuse[0]);
+//    glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.specular"), 3,&obstacleList[0]->specular[0]);
+      glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 1);
     //cube color
-    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.ambient"), 0.1745f, 0.01175f, 0.01175f);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
-    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
+    
 
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
@@ -475,6 +484,11 @@ void Window::display_callback(GLFWwindow* window)
     for(int i=0; i<obstaclePosList.size(); i++) {
         //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
         //outBoundList[i]->color =vec3(1.0f,0.0f,0.0f);
+        glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
+        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.ambient"), 1,&obstacleList[i]->ambient.x);
+        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 1,&obstacleList[i]->diffuse.x);
+        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.specular"), 1,&obstacleList[i]->specular.x);
+        //cout<<"color="<<obstacleList[i]->ambient.x<<","<<obstacleList[i]->ambient.y<<","<<obstacleList[i]->ambient.z<<endl;
         obstacleList[i]->draw(lightShaderProgram, mat4(1.0f));
     }
     
@@ -489,7 +503,7 @@ void Window::display_callback(GLFWwindow* window)
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
     }
     else {
-        glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+        glm::vec3 frameColor = glm::vec3(1.0,1.0,1.0);
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
     }
@@ -497,7 +511,7 @@ void Window::display_callback(GLFWwindow* window)
     for(int i=0; i<obstaclePosList.size(); i++) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(collisionList.find(i)== collisionList.end() && obstacleCollisionList.find(i)== obstacleCollisionList.end()) {
-            glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+            glm::vec3 frameColor = glm::vec3(1.0,1.0,1.0);
             glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
             outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
@@ -516,6 +530,7 @@ void Window::display_callback(GLFWwindow* window)
             if(*itr!=-1) {
                 vec3 newpos = randomPos();
                 obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
+                obstacleList[*itr]->update(mat4(1.0f));
                 obstaclePosList[*itr] = newpos;
             }
     
@@ -713,6 +728,17 @@ vec3 Window::randomPos() {
     
     return res;
 }
+
+vec3 Window::randomColor() {
+    GLfloat rColorx = 0.5 + ((rand() % 100) / 100.0f);
+    GLfloat rColory = 0.5 + ((rand() % 100) / 100.0f);
+    GLfloat rColorz = 0.5 + ((rand() % 100) / 100.0f);
+    vec3 color = normalize(vec3(rColorx,rColory,rColorz));
+    cout<<"color="<<color.x<<","<<color.y<<","<<color.z<<endl;
+    return color;
+}
+
+
 
 void Window::moveSphereObj() {
     int hitWall = walls->ballHitWall(spherePos, sphereRadius, direction);
