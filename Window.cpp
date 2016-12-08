@@ -812,7 +812,6 @@ void Window::RenderQuad()
     glBindVertexArray(0);
 }
 
-
 GLuint greyScaleMapVAO = 0;
 GLuint greyScaleMapVBO;
 void Window::RenderGreyScaleMap()
