@@ -106,15 +106,15 @@ void Window::initialize_objects()
 {
     
    
-//    // Skybox
-//    std::vector<const GLchar*> faces;
-//    faces.push_back("./skybox_texture/right.ppm");
-//    faces.push_back("./skybox_texture/left.ppm");
-//    faces.push_back("./skybox_texture/top.ppm");
-//    faces.push_back("./skybox_texture/bottom.ppm");
-//    faces.push_back("./skybox_texture/back.ppm");
-//    faces.push_back("./skybox_texture/front.ppm");
-//    skybox = new skybox::skybox(faces);
+    // Skybox
+    std::vector<const GLchar*> faces;
+    faces.push_back("./nebula/purplenebula_rt.ppm");
+    faces.push_back("./nebula/purplenebula_lf.ppm");
+    faces.push_back("./nebula/purplenebula_up.ppm");
+    faces.push_back("./nebula/purplenebula_dn.ppm");
+    faces.push_back("./nebula/purplenebula_bk.ppm");
+    faces.push_back("./nebula/purplenebula_ft.ppm");
+    skybox = new skybox::skybox(faces);
     // FrustumG object six planes of gameBox
     walls = new FrustumG();
     walls->setCubePlanes(40);
@@ -313,7 +313,9 @@ void Window::display_callback(GLFWwindow* window)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     
-    
+    // Skybox
+    glUseProgram(skyboxShaderProgram);
+    skybox->draw(skyboxShaderProgram);
     
     
     // Shadow mapping
@@ -333,25 +335,26 @@ void Window::display_callback(GLFWwindow* window)
     
     
     // Render scene for shadow mapping
-    Cube* testBox1 = new Cube(2.0f);
-    testBox1->isShadowMapping = true;
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f));
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
-    testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
-    delete(testBox1);
+    //Cube* testBox1 = new Cube(2.0f);
+    //testBox1->isShadowMapping = true;
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f));
+    //glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
+    //testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
+    //delete(testBox1);
     
-    Cube* testBox2 = new Cube(2.0f);
-    testBox2->isShadowMapping = true;
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    temp = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
-    testBox2->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-    delete(testBox2);
-    
+    // Sphere
     sphereObj->isShadowMapping = true;
     sphereObj->draw(depthShaderProgram, glm::mat4(1.0f));
     sphereObj->isShadowMapping = false;
+    
+    // Obstacles
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        Sphere* currObstacle = (Sphere*)obstacleList[i];
+        currObstacle->isShadowMapping = true;
+        currObstacle->draw(depthShaderProgram, mat4(1.0f));
+        currObstacle->isShadowMapping = false;
+    }
     
 
     // Store depth map
@@ -388,25 +391,16 @@ void Window::display_callback(GLFWwindow* window)
     
     
     // display cubes used for shadow mapping
-    testBox1 = new Cube(2.0f);
-    glUseProgram(gameboxShaderProgram);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 testBoxColor1 = glm::vec3(0.937f, 0.184f, 0.785f);
-    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor1.x);
-    testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
-    delete(testBox1);
-    testBox2 = new Cube(2.0f);
-    glUseProgram(gameboxShaderProgram);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 testBoxColor2 = glm::vec3(0.937f, 0.184f, 0.785f);
-    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor2.x);
-    testBox2->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-    delete(testBox2);
+    //testBox1 = new Cube(2.0f);
+    //glUseProgram(gameboxShaderProgram);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glm::vec3 testBoxColor1 = glm::vec3(0.937f, 0.184f, 0.785f);
+    //glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor1.x);
+    //testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
+    //delete(testBox1);
+
     
     
-    // Skybox
-    //glUseProgram(skyboxShaderProgram);
-    //skybox->draw(skyboxShaderProgram);
     
     // Bezier curve
     //glUseProgram(bezierShaderProgram);

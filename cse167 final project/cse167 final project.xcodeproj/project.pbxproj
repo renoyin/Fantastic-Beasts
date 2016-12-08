@@ -46,6 +46,12 @@
 		543CC0971DF8E22C0064D526 /* cubeShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = cubeShader.vert; path = ../../cubeShader.vert; sourceTree = "<group>"; };
 		543CC0981DF8E24D0064D526 /* cubeShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = cubeShader.frag; path = ../../cubeShader.frag; sourceTree = "<group>"; };
 		543CC0991DF91C7E0064D526 /* libirrklang.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libirrklang.dylib; path = "../../../../../../../Developer/irrKlang-64bit-1.5.0/bin/macosx-gcc/libirrklang.dylib"; sourceTree = "<group>"; };
+		543CC09D1DF922900064D526 /* purplenebula_bk.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = purplenebula_bk.ppm; sourceTree = "<group>"; };
+		543CC09E1DF922900064D526 /* purplenebula_dn.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = purplenebula_dn.ppm; sourceTree = "<group>"; };
+		543CC09F1DF922900064D526 /* purplenebula_ft.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = purplenebula_ft.ppm; sourceTree = "<group>"; };
+		543CC0A01DF922900064D526 /* purplenebula_lf.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = purplenebula_lf.ppm; sourceTree = "<group>"; };
+		543CC0A11DF922900064D526 /* purplenebula_rt.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = purplenebula_rt.ppm; sourceTree = "<group>"; };
+		543CC0A21DF922900064D526 /* purplenebula_up.ppm */ = {isa = PBXFileReference; lastKnownFileType = file; path = purplenebula_up.ppm; sourceTree = "<group>"; };
 		5442F7691DF776FF003179E8 /* particle.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.frag; path = ../../particle.frag; sourceTree = "<group>"; };
 		5442F76A1DF776FF003179E8 /* particle.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.vert; path = ../../particle.vert; sourceTree = "<group>"; };
 		5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParticleGenerator.cpp; path = ../../ParticleGenerator.cpp; sourceTree = "<group>"; };
@@ -100,12 +106,6 @@
 		547B5A271DE7890C00478A68 /* Vec3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Vec3.cpp; path = ../../Vec3.cpp; sourceTree = "<group>"; };
 		547B5A291DE7BDA600478A68 /* Plane.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Plane.cpp; path = ../../Plane.cpp; sourceTree = "<group>"; };
 		547B5A2A1DE7BDA600478A68 /* Plane.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Plane.h; path = ../../Plane.h; sourceTree = "<group>"; };
-		547B5A2D1DE7C6C400478A68 /* back.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = back.ppm; sourceTree = "<group>"; };
-		547B5A2E1DE7C6C400478A68 /* bottom.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = bottom.ppm; sourceTree = "<group>"; };
-		547B5A2F1DE7C6C400478A68 /* front.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = front.ppm; sourceTree = "<group>"; };
-		547B5A301DE7C6C400478A68 /* left.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = left.ppm; sourceTree = "<group>"; };
-		547B5A311DE7C6C400478A68 /* right.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = right.ppm; sourceTree = "<group>"; };
-		547B5A321DE7C6C400478A68 /* top.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = top.ppm; sourceTree = "<group>"; };
 		54947DFA1DEB709A005B0D19 /* .. */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = folder; path = ..; sourceTree = "<group>"; };
 		54947DFB1DEB70BE005B0D19 /* depthShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = depthShader.frag; path = ../../depthShader.frag; sourceTree = "<group>"; };
 		54E392491DF33EF300965510 /* depthShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = depthShader.vert; path = ../../depthShader.vert; sourceTree = "<group>"; };
@@ -127,6 +127,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		543CC09C1DF922900064D526 /* nebula */ = {
+			isa = PBXGroup;
+			children = (
+				543CC09D1DF922900064D526 /* purplenebula_bk.ppm */,
+				543CC09E1DF922900064D526 /* purplenebula_dn.ppm */,
+				543CC09F1DF922900064D526 /* purplenebula_ft.ppm */,
+				543CC0A01DF922900064D526 /* purplenebula_lf.ppm */,
+				543CC0A11DF922900064D526 /* purplenebula_rt.ppm */,
+				543CC0A21DF922900064D526 /* purplenebula_up.ppm */,
+			);
+			name = nebula;
+			path = ../../nebula;
+			sourceTree = "<group>";
+		};
 		547B59DC1DE7835600478A68 = {
 			isa = PBXGroup;
 			children = (
@@ -147,7 +161,7 @@
 		547B59E71DE7835700478A68 /* cse167 final project */ = {
 			isa = PBXGroup;
 			children = (
-				547B5A2C1DE7C6C400478A68 /* skybox_texture */,
+				543CC09C1DF922900064D526 /* nebula */,
 				54947DFA1DEB709A005B0D19 /* .. */,
 				547B59EF1DE7838400478A68 /* README.md */,
 				547B59F71DE7838400478A68 /* main.h */,
@@ -218,20 +232,6 @@
 				547B5A001DE784D200478A68 /* OpenGL.framework */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		547B5A2C1DE7C6C400478A68 /* skybox_texture */ = {
-			isa = PBXGroup;
-			children = (
-				547B5A2D1DE7C6C400478A68 /* back.ppm */,
-				547B5A2E1DE7C6C400478A68 /* bottom.ppm */,
-				547B5A2F1DE7C6C400478A68 /* front.ppm */,
-				547B5A301DE7C6C400478A68 /* left.ppm */,
-				547B5A311DE7C6C400478A68 /* right.ppm */,
-				547B5A321DE7C6C400478A68 /* top.ppm */,
-			);
-			name = skybox_texture;
-			path = ../../skybox_texture;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
