@@ -101,6 +101,11 @@ int lastHitWall = -1;
 //sound
 ISoundEngine *SoundEngine = createIrrKlangDevice();
 
+// Grey scale map
+glm::mat4 greyScaleMap_toWorld = glm::mat4(1.0f);
+bool isShowGreyScaleMap = false;
+
+
 
 void Window::initialize_objects()
 {
@@ -387,6 +392,23 @@ void Window::display_callback(GLFWwindow* window)
     glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "lightMVP"), 1, GL_FALSE, glm::value_ptr(lightMVPMatrix));
     glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "biasMatrix"), 1, GL_FALSE, glm::value_ptr(biasMatrix));
     RenderQuad();
+    
+    
+    // Render a sub window for grey scale map
+    if (isShowGreyScaleMap) {
+        float angle = acos(glm::dot(glm::normalize(cam_front), glm::vec3(0.0f, 0.0f, -1.0f)));
+        if (cam_front.x >= 0) {
+            angle = -angle;
+        }
+        //std::cout << glm::to_string(cam_front) << std::endl;
+        greyScaleMap_toWorld = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 1.0f, 0.0f));
+        greyScaleMap_toWorld = glm::translate(glm::mat4(1.0f), cam_pos + cam_front * 5) * greyScaleMap_toWorld;
+        greyScaleMap_toWorld = glm::translate(glm::mat4(1.0f), glm::normalize(glm::cross(cam_front, cam_up))*3) * greyScaleMap_toWorld;
+        greyScaleMap_toWorld = P * V * greyScaleMap_toWorld;
+        glUseProgram(shadowMappingShaderProgram);
+        glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram, "shadowMappingMVPMatrix"), 1, GL_FALSE, glm::value_ptr(greyScaleMap_toWorld));
+        RenderGreyScaleMap();
+    }
 
     
     
@@ -564,6 +586,9 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
                 speed -= 0.2f;
             }
         }
+        if (key == GLFW_KEY_O) {
+            isShowGreyScaleMap = -isShowGreyScaleMap;
+        }
     }
     
     else if(action == GLFW_RELEASE)
@@ -695,7 +720,7 @@ void Window::moveSphereObj() {
     
     if(hitWall != -1) {
         SoundEngine->play2D("bleep.ogg", GL_FALSE);
-        cout<< "current hit" << hitWall << endl;
+        //cout<< "current hit" << hitWall << endl;
         direction = walls->reflection(direction, hitWall);
     }
     
@@ -753,6 +778,36 @@ void Window::RenderQuad()
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
     }
     glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
+
+GLuint greyScaleMapVAO = 0;
+GLuint greyScaleMapVBO;
+void Window::RenderGreyScaleMap()
+{
+    if (greyScaleMapVAO == 0)
+    {
+        GLfloat quadVertices[] = {
+            // Positions        // Texture Coords
+            -0.8f,  -0.8f, 0.0f,  1.0f, 1.0f,
+            -0.8f, 0.8f, 0.0f,  1.0f, 0.0f,
+            0.8f,  -0.8f, 0.0f,  0.0f, 1.0f,
+            0.8f, 0.8f, 0.0f,  0.0f, 0.0f,
+        };
+        // Setup plane VAO
+        glGenVertexArrays(1, &greyScaleMapVAO);
+        glGenBuffers(1, &greyScaleMapVBO);
+        glBindVertexArray(greyScaleMapVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, greyScaleMapVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+    }
+    glBindVertexArray(greyScaleMapVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
 }
