@@ -37,5 +37,6 @@ public:
     std::vector<GLfloat> texcoords;
     std::vector<unsigned int> indices;
     int numsToDraw;
+    bool isShadowMapping = false;
 };
 #endif
