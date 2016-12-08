@@ -1,7 +1,10 @@
 #include "window.h"
 #include "glm/gtx/vector_angle.hpp"
 #include <time.h>
+#include <iostream>
+#include "/Developer/irrKlang-64bit-1.5.0/include/irrKlang.h"
 
+using namespace irrklang;
 using namespace std;
 
 const char* window_title = "GLFW Starter Project";
@@ -41,6 +44,7 @@ double Window::lastZ = 0.0f;
 
 std::string target = "object";
 std::string control = "object";
+Bezier* bezier;
 FrustumG* walls;
 skybox* skybox;
 Bezier* curve;
@@ -93,11 +97,15 @@ float obstacleRadius = 3;
 float Window::speed = 0.5f;
 bool eliminate = false;
 int lastHitWall = -1;
+#pragma comment(lib, "irrKlang.lib") // link with irrKlang.dll
+//sound
+ISoundEngine *SoundEngine = createIrrKlangDevice();
+
 
 void Window::initialize_objects()
 {
     
-    
+   
 //    // Skybox
 //    std::vector<const GLchar*> faces;
 //    faces.push_back("./skybox_texture/right.ppm");
@@ -135,6 +143,10 @@ void Window::initialize_objects()
         obstaclePosList.push_back(newpos);
     }
     
+    //sound
+    //SoundEngine = createIrrKlangDevice();
+    SoundEngine->play2D("breakout.ogg", GL_TRUE);
+    
 	// Load the shader program. Make sure you have the correct filepath up top
     skyboxShaderProgram = LoadShaders("./skybox.vert", "./skybox.frag");
     sphereShaderProgram = LoadShaders("./sphere.vert", "./sphere.frag");
@@ -144,6 +156,7 @@ void Window::initialize_objects()
     shadowMappingShaderProgram = LoadShaders("./depthMappingShader.vert", "./depthMappingShader.frag");
     particleShaderProgram = LoadShaders("./particle.vert", "./particle.frag");
     shadowMappingShaderProgram2 = LoadShaders("./cubeShader.vert", "./cubeShader.frag");
+
     
     
     // Plane
@@ -203,6 +216,7 @@ void Window::clean_up()
     delete(walls);
     delete(gameBox);
     delete(lightBox);
+    SoundEngine->drop();
     
     glDeleteProgram(skyboxShaderProgram);
 	glDeleteProgram(sphereShaderProgram);
@@ -282,11 +296,12 @@ void Window::resize_callback(GLFWwindow* window, int width, int height)
 
 void Window::idle_callback()
 {
-
+    particles->Update(0.1f, 10, vec3(sphereRadius));
 }
 
 void Window::display_callback(GLFWwindow* window)
 {
+    
     do_movement();
     moveSphereObj();
     GLfloat currentFrame = glfwGetTime();
@@ -452,6 +467,7 @@ void Window::display_callback(GLFWwindow* window)
     glUseProgram(gameboxShaderProgram);
     
     if(collisionList.size()>0) {
+        SoundEngine->play2D("solid.ogg", GL_FALSE);
         glm::vec3 frameColor = glm::vec3(1.0,0.0,0.0);
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
@@ -461,6 +477,7 @@ void Window::display_callback(GLFWwindow* window)
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
     }
+    
     for(int i=0; i<obstaclePosList.size(); i++) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(collisionList.find(i)== collisionList.end() && obstacleCollisionList.find(i)== obstacleCollisionList.end()) {
@@ -494,7 +511,7 @@ void Window::display_callback(GLFWwindow* window)
     //particles
     glUseProgram(particleShaderProgram);
     particles->Draw(particleShaderProgram);
-    particles->Update(0.6f, 2, vec3(obstacleRadius/2));
+    
 
 
     
@@ -544,6 +561,14 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
         }
         if(key == GLFW_KEY_E) {
             eliminate = !eliminate;
+        }
+        if(key==GLFW_KEY_UP) {
+            speed+=0.2f;
+        }
+        if(key==GLFW_KEY_DOWN) {
+            if(speed>0.2f) {
+                speed -= 0.2f;
+            }
         }
     }
     
@@ -675,6 +700,7 @@ void Window::moveSphereObj() {
     //int threshold = 3.0f;
     
     if(hitWall != -1) {
+        SoundEngine->play2D("bleep.ogg", GL_FALSE);
         cout<< "current hit" << hitWall << endl;
         direction = walls->reflection(direction, hitWall);
     }

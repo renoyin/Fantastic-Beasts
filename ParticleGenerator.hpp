@@ -23,6 +23,7 @@
 #include <glm/mat4x4.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Geode.h"
+#include <vector>
 
 
 // Represents a single particle and its state
@@ -31,7 +32,7 @@ struct Particle {
     glm::vec4 Color;
     GLfloat Life;
     
-    Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(0.0f) { }
+    Particle() : Position(0.0f), Velocity(0.0f), Color(1.0f), Life(1.0f) { }
 };
 
 
@@ -41,6 +42,8 @@ struct Particle {
 class ParticleGenerator
 {
 public:
+    std::vector<glm::vec3> particlesPos;
+    glm::vec3 p[40];
     // Constructor
     ParticleGenerator(GLuint amount);
     // Update all particles
@@ -49,10 +52,11 @@ public:
     void Draw(GLuint shaderProgram);
 private:
     // State
+    
     std::vector<Particle> particles;
     GLuint amount;
     // Render state
-    GLuint VAO;
+    GLuint VAO, VBO, PBO, CBO;
     // Initializes buffer and vertex attributes
     void init();
     // Returns the first Particle index that's currently unused e.g. Life <= 0.0f or 0 if no particle is currently inactive
