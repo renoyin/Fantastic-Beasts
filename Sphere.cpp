@@ -119,6 +119,11 @@ Sphere::~Sphere()
 
 void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
 {
+    glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
+    glUniform1f(glGetUniformLocation(shaderProgram, "material.shininess"), shininess);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "material.ambient"), 3, &ambient[0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 3, &diffuse[0]);
+    glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 3, &specular[0]);
     if(ifDraw && !isShadowMapping) {
         //toWorld = C*toWorld;
         glm::mat4 mvp = Window::P * Window::V * C * toWorld;
@@ -131,11 +136,7 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
         glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
         glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
         
-        glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
-        glUniform1f(glGetUniformLocation(shaderProgram, "material.shininess"), shininess);
-        glUniform3fv(glGetUniformLocation(shaderProgram, "material.ambient"), 3, &ambient[0]);
-        glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 3, &diffuse[0]);
-        glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 3, &specular[0]);
+        
 
         // draw sphere
         glBindVertexArray(VAO);
@@ -162,5 +163,8 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
 }
 
 void Sphere::update(glm::mat4 C) {
-    Geode::update(C);
+    ambient = Window::randomColor();
+    diffuse = Window::randomColor();
+    specular = Window::randomColor();
+    shininess = rand()%200;
 }

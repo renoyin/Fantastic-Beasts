@@ -8,7 +8,7 @@ uniform sampler2D shadowMap;
 void main()
 {
     float visibility = 1.0f;
-    if (texture(shadowMap, ShadowCoord.xy).r < ShadowCoord.z) {
+    if (texture(shadowMap, ShadowCoord.xy).r < (ShadowCoord.z-0.05)) {
         visibility = 0.1;
     }
     //vec3 MaterialAmbientColor = vec3(0.25, 0.2, 0.075);

@@ -106,15 +106,15 @@ void Window::initialize_objects()
 {
     
    
-//    // Skybox
-//    std::vector<const GLchar*> faces;
-//    faces.push_back("./skybox_texture/right.ppm");
-//    faces.push_back("./skybox_texture/left.ppm");
-//    faces.push_back("./skybox_texture/top.ppm");
-//    faces.push_back("./skybox_texture/bottom.ppm");
-//    faces.push_back("./skybox_texture/back.ppm");
-//    faces.push_back("./skybox_texture/front.ppm");
-//    skybox = new skybox::skybox(faces);
+    // Skybox
+    std::vector<const GLchar*> faces;
+    faces.push_back("./nebula/purplenebula_rt.ppm");
+    faces.push_back("./nebula/purplenebula_lf.ppm");
+    faces.push_back("./nebula/purplenebula_up.ppm");
+    faces.push_back("./nebula/purplenebula_dn.ppm");
+    faces.push_back("./nebula/purplenebula_bk.ppm");
+    faces.push_back("./nebula/purplenebula_ft.ppm");
+    skybox = new skybox::skybox(faces);
     // FrustumG object six planes of gameBox
     walls = new FrustumG();
     walls->setCubePlanes(40);
@@ -314,7 +314,9 @@ void Window::display_callback(GLFWwindow* window)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     
-    
+    // Skybox
+    glUseProgram(skyboxShaderProgram);
+    skybox->draw(skyboxShaderProgram);
     
     
     // Shadow mapping
@@ -334,25 +336,26 @@ void Window::display_callback(GLFWwindow* window)
     
     
     // Render scene for shadow mapping
-    Cube* testBox1 = new Cube(2.0f);
-    testBox1->isShadowMapping = true;
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f));
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
-    testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
-    delete(testBox1);
+    //Cube* testBox1 = new Cube(2.0f);
+    //testBox1->isShadowMapping = true;
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f));
+    //glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
+    //testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
+    //delete(testBox1);
     
-    Cube* testBox2 = new Cube(2.0f);
-    testBox2->isShadowMapping = true;
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    temp = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-    glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
-    testBox2->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-    delete(testBox2);
-    
+    // Sphere
     sphereObj->isShadowMapping = true;
     sphereObj->draw(depthShaderProgram, glm::mat4(1.0f));
     sphereObj->isShadowMapping = false;
+    
+    // Obstacles
+    for(int i=0; i<obstaclePosList.size(); i++) {
+        Sphere* currObstacle = (Sphere*)obstacleList[i];
+        currObstacle->isShadowMapping = true;
+        currObstacle->draw(depthShaderProgram, mat4(1.0f));
+        currObstacle->isShadowMapping = false;
+    }
     
 
     // Store depth map
@@ -389,25 +392,16 @@ void Window::display_callback(GLFWwindow* window)
     
     
     // display cubes used for shadow mapping
-    testBox1 = new Cube(2.0f);
-    glUseProgram(gameboxShaderProgram);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 testBoxColor1 = glm::vec3(0.937f, 0.184f, 0.785f);
-    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor1.x);
-    testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
-    delete(testBox1);
-    testBox2 = new Cube(2.0f);
-    glUseProgram(gameboxShaderProgram);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 testBoxColor2 = glm::vec3(0.937f, 0.184f, 0.785f);
-    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor2.x);
-    testBox2->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
-    delete(testBox2);
+    //testBox1 = new Cube(2.0f);
+    //glUseProgram(gameboxShaderProgram);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glm::vec3 testBoxColor1 = glm::vec3(0.937f, 0.184f, 0.785f);
+    //glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor1.x);
+    //testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
+    //delete(testBox1);
+
     
     
-    // Skybox
-    //glUseProgram(skyboxShaderProgram);
-    //skybox->draw(skyboxShaderProgram);
     
     // Bezier curve
     //glUseProgram(bezierShaderProgram);
@@ -450,6 +444,13 @@ void Window::display_callback(GLFWwindow* window)
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     
     glUseProgram(lightShaderProgram);
+    
+   
+    //    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), obstacleList[0]->shininess);
+//    glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.ambient"), 3,&obstacleList[0]->ambient[0]);
+//    glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 3,&obstacleList[0]->diffuse[0]);
+//    glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.specular"), 3,&obstacleList[0]->specular[0]);
+      glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 1);
     //cube color
     
 
@@ -461,6 +462,11 @@ void Window::display_callback(GLFWwindow* window)
     for(int i=0; i<obstaclePosList.size(); i++) {
         //cout<< cubePosList[i].x <<","<<cubePosList[i].y<<","<<cubePosList[i].z << endl;
         //outBoundList[i]->color =vec3(1.0f,0.0f,0.0f);
+        glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
+        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.ambient"), 1,&obstacleList[i]->ambient.x);
+        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 1,&obstacleList[i]->diffuse.x);
+        glUniform3fv(glGetUniformLocation(lightShaderProgram, "material.specular"), 1,&obstacleList[i]->specular.x);
+        //cout<<"color="<<obstacleList[i]->ambient.x<<","<<obstacleList[i]->ambient.y<<","<<obstacleList[i]->ambient.z<<endl;
         obstacleList[i]->draw(lightShaderProgram, mat4(1.0f));
     }
     
@@ -475,7 +481,7 @@ void Window::display_callback(GLFWwindow* window)
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
     }
     else {
-        glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+        glm::vec3 frameColor = glm::vec3(1.0,1.0,1.0);
         glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
     }
@@ -483,7 +489,7 @@ void Window::display_callback(GLFWwindow* window)
     for(int i=0; i<obstaclePosList.size(); i++) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         if(collisionList.find(i)== collisionList.end() && obstacleCollisionList.find(i)== obstacleCollisionList.end()) {
-            glm::vec3 frameColor = glm::vec3(0.0,0.0,0.0);
+            glm::vec3 frameColor = glm::vec3(1.0,1.0,1.0);
             glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &frameColor.x);
             outBoundList[i]->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),obstaclePosList[i]));
         }
@@ -502,7 +508,7 @@ void Window::display_callback(GLFWwindow* window)
             if(*itr!=-1) {
                 vec3 newpos = randomPos();
                 obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
-                obstacleList[*itr]->color = randomColor();
+                obstacleList[*itr]->update(mat4(1.0f));
                 obstaclePosList[*itr] = newpos;
             }
     
@@ -703,6 +709,7 @@ vec3 Window::randomColor() {
     GLfloat rColory = 0.5 + ((rand() % 100) / 100.0f);
     GLfloat rColorz = 0.5 + ((rand() % 100) / 100.0f);
     vec3 color = normalize(vec3(rColorx,rColory,rColorz));
+    cout<<"color="<<color.x<<","<<color.y<<","<<color.z<<endl;
     return color;
 }
 

@@ -24,10 +24,7 @@ class Sphere: public Geode
 public:
     Sphere(float radius, unsigned int rings, unsigned int sectors);
     ~Sphere();
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-    float shininess; 
+    
     
     void draw(GLuint, glm::mat4);
     void update(glm::mat4 C);
