@@ -42,6 +42,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		543CC0971DF8E22C0064D526 /* cubeShader.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = cubeShader.vert; path = ../../cubeShader.vert; sourceTree = "<group>"; };
+		543CC0981DF8E24D0064D526 /* cubeShader.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = cubeShader.frag; path = ../../cubeShader.frag; sourceTree = "<group>"; };
 		5442F7691DF776FF003179E8 /* particle.frag */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.frag; path = ../../particle.frag; sourceTree = "<group>"; };
 		5442F76A1DF776FF003179E8 /* particle.vert */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; name = particle.vert; path = ../../particle.vert; sourceTree = "<group>"; };
 		5442F76B1DF776FF003179E8 /* ParticleGenerator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ParticleGenerator.cpp; path = ../../ParticleGenerator.cpp; sourceTree = "<group>"; };
@@ -163,6 +165,8 @@
 				54947DFB1DEB70BE005B0D19 /* depthShader.frag */,
 				54E3924B1DF3643500965510 /* depthMappingShader.vert */,
 				54E3924A1DF35F5100965510 /* depthMappingShader.frag */,
+				543CC0971DF8E22C0064D526 /* cubeShader.vert */,
+				543CC0981DF8E24D0064D526 /* cubeShader.frag */,
 				547B59F21DE7838400478A68 /* skybox.h */,
 				547B59F01DE7838400478A68 /* skybox.cpp */,
 				547B59F41DE7838400478A68 /* skybox.vert */,

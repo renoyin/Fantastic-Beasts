@@ -115,7 +115,7 @@ Sphere::~Sphere()
 
 void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
 {
-    if(ifDraw) {
+    if(ifDraw && !isShadowMapping) {
         //toWorld = C*toWorld;
         glm::mat4 mvp = Window::P * Window::V * C * toWorld;
         // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
@@ -142,6 +142,13 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
             
         }
         glBindVertexArray(0);
+    }
+    else if (isShadowMapping) {
+        glm::mat4 mvp = Window::P * Window::V * C * toWorld;
+        GLuint modelUniform = glGetUniformLocation(shaderProgram, "model");
+        glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, (unsigned int)indices.size(), GL_UNSIGNED_INT, 0);
     }
     
   

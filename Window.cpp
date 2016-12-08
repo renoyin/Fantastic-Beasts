@@ -9,7 +9,7 @@ using namespace std;
 
 const char* window_title = "GLFW Starter Project";
 GLint shaderProgram, skyboxShaderProgram, sphereShaderProgram, bezierShaderProgram, selectShaderProgram, envmapShaderProgram, gameboxShaderProgram, lightShaderProgram, depthShaderProgram, particleShaderProgram,
-    shadowMappingShaderProgram;
+    shadowMappingShaderProgram, shadowMappingShaderProgram2;
 
 
 // On some systems you need to change this to the absolute path
@@ -78,7 +78,7 @@ GLfloat aspect = 45.0f;
 bool keys[1024];
 
 // light
-glm::vec3 dirLightDirection = glm::vec3(0.0f, -1.0f, 0.0f);
+glm::vec3 dirLightDirection = glm::vec3(4.0f, -16.0f, 8.0f);
 glm::vec3 pointLightPosition = glm::vec3(0.0f,  5.0f,  0.0f);
 
 // Shadow mapping
@@ -155,7 +155,8 @@ void Window::initialize_objects()
     depthShaderProgram = LoadShaders("./depthShader.vert", "./depthShader.frag");
     shadowMappingShaderProgram = LoadShaders("./depthMappingShader.vert", "./depthMappingShader.frag");
     particleShaderProgram = LoadShaders("./particle.vert", "./particle.frag");
-    bezierShaderProgram = LoadShaders("./bezier.vert", "./bezier.frag");
+    shadowMappingShaderProgram2 = LoadShaders("./cubeShader.vert", "./cubeShader.frag");
+
     
     
     // Plane
@@ -192,8 +193,8 @@ void Window::initialize_objects()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
@@ -318,9 +319,9 @@ void Window::display_callback(GLFWwindow* window)
     // Shadow mapping
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightMVPMatrix;
-    GLfloat near_plane = -1.0f, far_plane = 40.0f;
-    lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, near_plane, far_plane);
-    lightView = glm::lookAt(glm::vec3(-2.0f, 4.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0, 0.0, 1.0));
+    GLfloat near_plane = -1.0f, far_plane = 100.0f;
+    lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, near_plane, far_plane);
+    lightView = glm::lookAt(-dirLightDirection, glm::vec3(0.0f), glm::vec3(0.0, 0.0, 1.0));
     lightMVPMatrix = lightProjection * lightView;
     // - render scene from light's point of view
     glUseProgram(depthShaderProgram);
@@ -329,62 +330,77 @@ void Window::display_callback(GLFWwindow* window)
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
     
+    
+    
     // Render scene for shadow mapping
     Cube* testBox1 = new Cube(2.0f);
     testBox1->isShadowMapping = true;
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -15.0f, 5.0f));
+    glm::mat4 temp = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f));
     glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
-    testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -15.0f, 5.0f)));
+    testBox1->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
     delete(testBox1);
     
     Cube* testBox2 = new Cube(2.0f);
     testBox2->isShadowMapping = true;
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    temp = glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -10.0f, -5.0f));
+    temp = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
     glUniformMatrix4fv(glGetUniformLocation(depthShaderProgram, "model"), 1, GL_FALSE, &temp[0][0]);
-    testBox2->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -10.0f, -5.0f)));
+    testBox2->draw(depthShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
     delete(testBox2);
     
+    sphereObj->isShadowMapping = true;
+    sphereObj->draw(depthShaderProgram, glm::mat4(1.0f));
+    sphereObj->isShadowMapping = false;
+    
+
+    // Store depth map
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // Reset viewport
     glViewport(0, 0, Window::width, Window::height);
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     
+    
+    
+    
+    
     // Render quad
-    glUseProgram(shadowMappingShaderProgram);
+    glm::mat4 biasMatrix(
+                         0.5, 0.0, 0.0, 0.0,
+                         0.0, 0.5, 0.0, 0.0,
+                         0.0, 0.0, 0.5, 0.0,
+                         0.5, 0.5, 0.5, 1.0);
+    glUseProgram(shadowMappingShaderProgram2);
     glm::mat4 mvp = Window::P * Window::V;
     // We need to calcullate this because modern OpenGL does not keep track of any matrix other than the viewport (D)
     // Consequently, we need to forward the projection, view, and model matrices to the shader programs
     // Get the location of the uniform variables "projection" and "modelview"
-    GLuint mvpUniform = glGetUniformLocation(shadowMappingShaderProgram, "shadowMappingMVPMatrix");
+    GLuint mvpUniform = glGetUniformLocation(shadowMappingShaderProgram2, "MVP");
     // Now send these values to the shader program
     glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, &mvp[0][0]);
-    //glUniform3f(glGetUniformLocation(shadowMappingShaderProgram, "Color"), 0.7f, 0.7f, 0.7f);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, depthMap);
+    glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "lightMVP"), 1, GL_FALSE, glm::value_ptr(lightMVPMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "biasMatrix"), 1, GL_FALSE, glm::value_ptr(biasMatrix));
     RenderQuad();
-    
-    
-    
-    
+
     
     
     // display cubes used for shadow mapping
     testBox1 = new Cube(2.0f);
     glUseProgram(gameboxShaderProgram);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 testBoxColor1 = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::vec3 testBoxColor1 = glm::vec3(0.937f, 0.184f, 0.785f);
     glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor1.x);
-    testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(5.0f, -15.0f, 5.0f)));
+    testBox1->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, -15.0f, 0.0f)));
     delete(testBox1);
     testBox2 = new Cube(2.0f);
     glUseProgram(gameboxShaderProgram);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 testBoxColor2 = glm::vec3(0.5f, 0.5f, 0.5f);
+    glm::vec3 testBoxColor2 = glm::vec3(0.937f, 0.184f, 0.785f);
     glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &testBoxColor2.x);
-    testBox2->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f, -10.0f, -5.0f)));
+    testBox2->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
     delete(testBox2);
     
     
@@ -501,11 +517,11 @@ void Window::display_callback(GLFWwindow* window)
     
     
     // Light box at (0,22,0)
-    glUseProgram(gameboxShaderProgram);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &lightColor.x);
-    gameBox->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 22.0f, 0.0f)));
+    //glUseProgram(gameboxShaderProgram);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //glm::vec3 lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    //glUniform3fv(glGetUniformLocation(gameboxShaderProgram, "Color"), 1, &lightColor.x);
+    //gameBox->draw(gameboxShaderProgram, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 22.0f, 0.0f)));
     
     
     // Game box
