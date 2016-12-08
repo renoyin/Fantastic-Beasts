@@ -501,7 +501,7 @@ void Window::display_callback(GLFWwindow* window)
         sphereBound->drawFrame(gameboxShaderProgram, translate(mat4(1.0f),spherePos));
         
         glUseProgram(shadowMappingShaderProgram2);
-        glUniformMatrix4fv(glGetUniformLocation(shadowMappingShaderProgram2, "randColor"), 1, GL_FALSE, glm::value_ptr(randomColor()));
+        glUniform3fv(glGetUniformLocation(shadowMappingShaderProgram2, "randColor"), 1, glm::value_ptr(randomColor()));
         glUseProgram(gameboxShaderProgram);
     }
     else {
