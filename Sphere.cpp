@@ -7,7 +7,11 @@ using namespace std;
 
 Sphere::Sphere(float radius, unsigned int rings, unsigned int sectors)
 {
-
+    
+    ambient = Window::randomColor();
+    diffuse = Window::randomColor();
+    specular = Window::randomColor();
+    shininess = rand()%200;
     float const R = 1./(float)(rings-1);
     float const S = 1./(float)(sectors-1);
     int r, s;
@@ -128,7 +132,10 @@ void Sphere::draw(GLuint shaderProgram, glm::mat4 C)
         glUniformMatrix4fv(modelUniform, 1, GL_FALSE, &toWorld[0][0]);
         
         glUniform3f(glGetUniformLocation(shaderProgram, "colorin"), color.x, color.y, color.z);
-        
+        glUniform1f(glGetUniformLocation(shaderProgram, "material.shininess"), shininess);
+        glUniform3fv(glGetUniformLocation(shaderProgram, "material.ambient"), 3, &ambient[0]);
+        glUniform3fv(glGetUniformLocation(shaderProgram, "material.diffuse"), 3, &diffuse[0]);
+        glUniform3fv(glGetUniformLocation(shaderProgram, "material.specular"), 3, &specular[0]);
 
         // draw sphere
         glBindVertexArray(VAO);

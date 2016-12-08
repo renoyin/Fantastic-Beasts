@@ -16,7 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <vector>
 #include "Geode.h"
-
+#include <time.h>
 class Sphere: public Geode
 {
 
@@ -24,11 +24,15 @@ class Sphere: public Geode
 public:
     Sphere(float radius, unsigned int rings, unsigned int sectors);
     ~Sphere();
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shininess; 
     
     void draw(GLuint, glm::mat4);
     void update(glm::mat4 C);
     void spin(float);
- 
+    
     // These variables are needed for the shader program
     GLuint VBO, VBO2, VAO, EBO;
     GLuint uProjection, uModelview;

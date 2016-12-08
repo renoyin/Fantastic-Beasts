@@ -131,9 +131,10 @@ void Window::initialize_objects()
     particles = new ParticleGenerator(1000);
     
     //cube object
-    for(int i=0; i<3; i++) {
+    for(int i=0; i<8; i++) {
         Cube* cubeObj = new Cube(obstacleRadius);
         Sphere* obstacle= new Sphere(obstacleRadius, 12, 24);
+        obstacle->color = randomColor();
         vec3 newpos = randomPos();
         obstacle->toWorld = translate(mat4(1.0f), newpos);
         obstacle->solid = true;
@@ -440,16 +441,17 @@ void Window::display_callback(GLFWwindow* window)
     //glUniform3fv(glGetUniformLocation(envmapShaderProgram, "cameraPos"), 1, &cam_pos[0]);
     //glUniform1i(glGetUniformLocation(envmapShaderProgram, "skybox"), 0);
     //glBindTexture(GL_TEXTURE_CUBE_MAP, skybox->textureID);
+    
+    //sphere object
+    glUseProgram(lightShaderProgram);
     sphereObj->draw(lightShaderProgram, glm::mat4(1.0f));
+    
+    
     //glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     
     glUseProgram(lightShaderProgram);
     //cube color
-    glUniform1f(glGetUniformLocation(lightShaderProgram, "material.shininess"), 0.6f*128);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.ambient"), 0.1745f, 0.01175f, 0.01175f);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.diffuse"), 0.61424f, 0.04136f, 0.04136f);
-    glUniform3f(glGetUniformLocation(lightShaderProgram, "material.specular"), 0.727811f, 0.626959f, 0.626959f);
-    glUniform1i(glGetUniformLocation(lightShaderProgram, "mode"), 2);
+    
 
     //check collision and delete collide cube, then generate a new one in random position
     unordered_set<int> collisionList = checkCollision();
@@ -500,6 +502,7 @@ void Window::display_callback(GLFWwindow* window)
             if(*itr!=-1) {
                 vec3 newpos = randomPos();
                 obstacleList[*itr]->toWorld = translate(mat4(1.0f), newpos);
+                obstacleList[*itr]->color = randomColor();
                 obstaclePosList[*itr] = newpos;
             }
     
@@ -694,6 +697,16 @@ vec3 Window::randomPos() {
     
     return res;
 }
+
+vec3 Window::randomColor() {
+    GLfloat rColorx = 0.5 + ((rand() % 100) / 100.0f);
+    GLfloat rColory = 0.5 + ((rand() % 100) / 100.0f);
+    GLfloat rColorz = 0.5 + ((rand() % 100) / 100.0f);
+    vec3 color = normalize(vec3(rColorx,rColory,rColorz));
+    return color;
+}
+
+
 
 void Window::moveSphereObj() {
     int hitWall = walls->ballHitWall(spherePos, sphereRadius, direction);
