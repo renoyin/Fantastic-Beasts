@@ -118,9 +118,9 @@ GLuint ParticleGenerator::firstUnusedParticle()
 
 void ParticleGenerator::respawnParticle(Particle &particle, glm::vec3 offset)
 {
-    GLfloat randomx = ((rand() % 100) - 20) / 10.0f;
-    GLfloat randomy = ((rand() % 100) - 20) / 10.0f;
-    GLfloat randomz = ((rand() % 100) - 20) / 10.0f;
+    GLfloat randomx = ((rand() % 100) - 60) / 10.0f-2;
+    GLfloat randomy = ((rand() % 100) - 60) / 10.0f-2;
+    GLfloat randomz = ((rand() % 100) - 60) / 10.0f-2;
     //cout<<"random="<<random<<endl;
     GLfloat rColorx = 0.5 + ((rand() % 100) / 100.0f);
     GLfloat rColory = 0.5 + ((rand() % 100) / 100.0f);
@@ -130,7 +130,7 @@ void ParticleGenerator::respawnParticle(Particle &particle, glm::vec3 offset)
     vec3 dirNorm = normalize(Window::direction);
     
     //cout<<"color="<<rColor<<endl;
-    particle.Position = Window::spherePos - dirNorm*vec3(randomx, randomy, randomz) - dirNorm*offset;
+    particle.Position = Window::spherePos+vec3(randomx, randomy, randomz) - dirNorm*offset;
     //cout<<"position="<<particle.Position.x<<","<<particle.Position.y<<","<<particle.Position.z<<endl;
     particle.Color = glm::vec4(color, 1.0f);
     particle.Life = 1.0f;
