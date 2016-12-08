@@ -72,6 +72,7 @@ public:
 
     
     static void RenderQuad();
+    static void RenderGreyScaleMap();
 };
 
 #endif

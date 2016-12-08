@@ -115,8 +115,8 @@ int FrustumG::ballHitWall(vec3 p, float r, vec3 direction) {
         //cout<< distance << endl;
         if(distance < r && angle>90) {
             lastWall = (curWall+1)%6;
-            cout << "dist=" <<distance<<endl;
-            cout << "angle=" << angle << endl;
+            //cout << "dist=" <<distance<<endl;
+            //cout << "angle=" << angle << endl;
             return curWall;
         }
         curWall++;
